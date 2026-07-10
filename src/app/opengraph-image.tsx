@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/site-config";
 
-export const alt = `${siteConfig.name} — Platform Hiburan Premium`;
+export const alt = `Sakura School Simulator APK — Unduh Gratis`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -32,18 +32,18 @@ export default function OgImage() {
             fontWeight: 600,
           }}
         >
-          Platform Hiburan Premium
+          Unduh Gratis · Android APK
         </div>
         <div
           style={{
-            fontSize: 72,
+            fontSize: 64,
             fontWeight: 700,
             marginTop: 24,
             lineHeight: 1.05,
             letterSpacing: -2,
           }}
         >
-          {siteConfig.name}
+          Sakura School Simulator APK
         </div>
         <div
           style={{
@@ -54,7 +54,7 @@ export default function OgImage() {
             lineHeight: 1.4,
           }}
         >
-          250.000+ film, serial, anime & siaran olahraga langsung.
+          Simulasi sekolah open-world — jelajahi, kustomisasi, dan berpetualang gratis.
         </div>
         <div
           style={{
@@ -70,7 +70,7 @@ export default function OgImage() {
             alignSelf: "flex-start",
           }}
         >
-          Unduh Sekarang · {siteConfig.version}
+          Unduh APK Sekarang · {siteConfig.version}
         </div>
       </div>
     ),

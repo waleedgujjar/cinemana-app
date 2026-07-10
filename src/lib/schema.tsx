@@ -1,57 +1,63 @@
-import { siteConfig } from "@/lib/site-config";
-import { faqCopy } from "@/lib/site-config";
+import type { SiteConfigData, FaqItem, WpPost } from "@/lib/content-types";
+import { siteConfig as fallbackSiteConfig } from "@/lib/site-config";
 
-export function organizationSchema() {
+export function organizationSchema(config: SiteConfigData = fallbackSiteConfig) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: siteConfig.name,
-    url: siteConfig.url,
-    logo: `${siteConfig.url}/opengraph-image`,
-    description: siteConfig.description,
+    name: config.name,
+    url: config.url,
+    logo: `${config.url}/opengraph-image`,
+    description: config.description,
   };
 }
 
-export function webSiteSchema() {
+export function webSiteSchema(config: SiteConfigData = fallbackSiteConfig) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: siteConfig.name,
-    url: siteConfig.url,
-    description: siteConfig.description,
+    name: config.name,
+    url: config.url,
+    description: config.description,
     inLanguage: "id",
     publisher: {
       "@type": "Organization",
-      name: siteConfig.name,
+      name: config.name,
     },
   };
 }
 
-export function softwareApplicationSchema() {
+export function softwareApplicationSchema(
+  config: SiteConfigData = fallbackSiteConfig
+) {
+  const downloadUrl = config.downloadFile.startsWith("http")
+    ? config.downloadFile
+    : `${config.url}${config.downloadFile}`;
+
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: siteConfig.name,
+    name: config.downloadFileName,
     operatingSystem: "Android",
-    applicationCategory: "EntertainmentApplication",
-    softwareVersion: siteConfig.version.replace(/^v/, ""),
+    applicationCategory: "GameApplication",
+    softwareVersion: config.version.replace(/^v/, ""),
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "IDR",
     },
-    description: siteConfig.description,
-    url: siteConfig.url,
-    downloadUrl: `${siteConfig.url}${siteConfig.downloadFile}`,
+    description: config.description,
+    url: config.url,
+    downloadUrl,
     inLanguage: "id",
   };
 }
 
-export function faqPageSchema() {
+export function faqPageSchema(items: FaqItem[]) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faqCopy.items.map((item) => ({
+    mainEntity: items.map((item) => ({
       "@type": "Question",
       name: item.question,
       acceptedAnswer: {
@@ -62,19 +68,68 @@ export function faqPageSchema() {
   };
 }
 
-export function webPageSchema() {
+export function webPageSchema(config: SiteConfigData = fallbackSiteConfig) {
   return {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `${siteConfig.name} — Platform Hiburan Premium`,
-    description: siteConfig.description,
-    url: siteConfig.url,
+    name: `${config.name} — ${config.mainKeyword}`,
+    description: config.description,
+    url: config.url,
     inLanguage: "id",
     isPartOf: {
       "@type": "WebSite",
-      name: siteConfig.name,
-      url: siteConfig.url,
+      name: config.name,
+      url: config.url,
     },
+  };
+}
+
+export function blogPostingSchema(
+  post: WpPost,
+  config: SiteConfigData = fallbackSiteConfig
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.modified,
+    author: {
+      "@type": "Person",
+      name: post.author.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: config.name,
+      logo: {
+        "@type": "ImageObject",
+        url: `${config.url}/opengraph-image`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${config.url}/blog/${post.slug}`,
+    },
+    image: post.featuredImage?.sourceUrl,
+    url: `${config.url}/blog/${post.slug}`,
+    inLanguage: "id",
+  };
+}
+
+export function breadcrumbSchema(
+  items: { name: string; url: string }[],
+  config: SiteConfigData = fallbackSiteConfig
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith("http") ? item.url : `${config.url}${item.url}`,
+    })),
   };
 }
 

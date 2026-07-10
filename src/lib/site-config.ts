@@ -1,29 +1,30 @@
 export const siteConfig = {
-  name: "Cinemana Shabakaty",
-  shortName: "Cinemana",
-  version: "v5.3.3",
+  name: "Sakura School Simulator",
+  shortName: "Sakura School",
+  version: "v1.042.20",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecinemana.org",
   description:
-    "Platform hiburan generasi berikutnya — akses 250.000+ film, serial, anime, dan siaran olahraga langsung.",
+    "Unduh Sakura School Simulator APK gratis untuk Android. Jelajahi dunia sekolah terbuka, kustomisasi karakter, dan petualangan seru — aman, cepat, dan tanpa registrasi.",
   locale: "id_ID",
+  mainKeyword: "sakura school simulator APK",
   downloadFile: "/downloads/cinemana-shabakaty.apk",
-  downloadFileName: "Cinemana Shabakaty v5.3.3 (APK)",
+  downloadFileName: "Sakura School Simulator APK",
 } as const;
 
 export const heroCopy = {
-  kicker: "Platform Hiburan Premium",
-  headline: "Hiburan Tanpa Batas, Dirancang untuk Anda",
+  kicker: "Unduh APK Resmi · Gratis",
+  headline: "Sakura School Simulator APK — Petualangan Sekolah Tanpa Batas",
   subhead:
-    "Akses 250.000+ film, serial, anime, dan siaran olahraga langsung — pengalaman streaming kelas dunia dalam satu platform.",
-  ctaPrimary: "Unduh Sekarang",
+    "Unduh Sakura School Simulator APK terbaru untuk Android. Jelajahi kampus, kustomisasi karakter, berteman, dan nikmati simulasi sekolah open-world yang seru — gratis dan aman.",
+  ctaPrimary: "Unduh APK Sekarang",
   ctaSecondary: "Pelajari Lebih Lanjut",
   stats: [
-    { value: "250K+", label: "Film & Serial" },
-    { value: "Live", label: "Siaran Olahraga" },
-    { value: "Gratis", label: "Tanpa Langganan" },
+    { value: "Gratis", label: "Unduh APK" },
+    { value: "Open", label: "World Sandbox" },
+    { value: "Android", label: "Didukung Penuh" },
   ],
   trust: [
-    { label: "Resmi & aman" },
+    { label: "APK aman & resmi" },
     { label: "Tanpa registrasi" },
     { label: "Gratis selamanya" },
   ],
@@ -31,58 +32,58 @@ export const heroCopy = {
 
 export const downloadGuideCopy = {
   id: "unduh",
-  kicker: "Panduan Instalasi",
-  title: "Cara Mengunduh",
+  kicker: "Panduan Unduh APK",
+  title: "Cara Mengunduh Sakura School Simulator APK",
   description:
-    "Tiga langkah sederhana untuk mengunduh dan menginstal aplikasi di perangkat Anda. Prosesnya cepat, aman, dan tidak memerlukan keahlian teknis.",
+    "Ikuti tiga langkah mudah untuk mengunduh dan menginstal Sakura School Simulator APK di perangkat Android Anda — cepat, aman, dan tanpa keahlian teknis.",
   steps: [
     {
       number: "01",
       icon: "Smartphone" as const,
-      title: "Pilih Perangkat Anda",
+      title: "Siapkan Perangkat Android",
       description:
-        "Tentukan platform yang Anda gunakan — Android, Smart TV, atau perangkat kompatibel lainnya — agar pengalaman streaming optimal sesuai layar Anda.",
+        "Pastikan perangkat Anda menjalankan Android 7.0 atau lebih baru dengan ruang penyimpanan yang cukup untuk menginstal Sakura School Simulator APK.",
     },
     {
       number: "02",
       icon: "Download" as const,
-      title: "Unduh Aplikasi",
+      title: "Unduh File APK",
       description:
-        'Klik tombol "Unduh Sekarang" untuk mengunduh versi terbaru aplikasi secara aman. File APK resmi langsung dari server kami, tanpa perantara pihak ketiga.',
+        'Klik tombol "Unduh APK Sekarang" untuk mengunduh Sakura School Simulator APK versi terbaru secara langsung dari server kami — tanpa perantara pihak ketiga.',
     },
     {
       number: "03",
       icon: "Sparkles" as const,
-      title: "Instal & Nikmati",
+      title: "Instal & Mainkan",
       description:
-        "Buka file yang diunduh, izinkan instalasi dari sumber tepercaya, dan aplikasi siap digunakan dalam hitungan detik. Nikmati hiburan tanpa batas segera.",
+        "Buka file APK, aktifkan \"Instal dari sumber tidak dikenal\" di pengaturan, lalu instal. Dalam hitungan detik, Sakura School Simulator siap dimainkan.",
     },
   ],
 } as const;
 
 export const aboutCopy = {
   id: "tentang",
-  kicker: "Tentang Kami",
-  title: "About Us",
+  kicker: "Tentang Game",
+  title: "Tentang Sakura School Simulator",
   subtitle:
-    "Platform hiburan yang dirancang untuk memberikan pengalaman streaming terbaik — cepat, aman, dan selalu terbaru.",
+    "Simulasi sekolah open-world yang memungkinkan Anda menjelajahi, berinteraksi, dan menciptakan cerita sendiri di dalam kampus Sakura.",
   paragraphs: [
-    "Cinemana Shabakaty lahir dari komitmen untuk menghadirkan akses hiburan berkualitas tinggi kepada semua orang, tanpa hambatan langganan atau registrasi yang rumit. Kami percaya setiap pengguna berhak menikmati film, serial, anime, dan siaran olahraga langsung dalam satu platform yang mudah digunakan.",
-    "Tim kami terus memperbarui katalog konten dan mengoptimalkan performa aplikasi agar streaming tetap lancar di berbagai perangkat. Keamanan pengguna menjadi prioritas — setiap unduhan berasal dari server resmi kami, dan pembaruan rutin memastikan pengalaman yang stabil serta terpercaya.",
+    "Sakura School Simulator adalah game simulasi sekolah open-world yang populer di kalangan penggemar game sandbox. Pemain dapat menjelajahi lingkungan sekolah yang luas, berinteraksi dengan karakter lain, menyelesaikan misi, dan mengekspresikan kreativitas melalui kustomisasi karakter yang mendalam.",
+    "Situs ini menyediakan Sakura School Simulator APK terbaru untuk pengguna Android yang ingin mengunduh dan menginstal game dengan aman. Kami memastikan setiap file APK berasal dari sumber terpercaya, diperbarui secara rutin, dan dapat diinstal tanpa proses registrasi yang rumit.",
   ],
   features: [
-    "Pembaruan konten dan versi aplikasi secara berkala",
-    "Streaming lancar di Android, Smart TV, dan perangkat kompatibel",
-    "Unduhan aman langsung dari server resmi",
-    "Tanpa registrasi — langsung nikmati hiburan",
-    "Antarmuka modern yang mudah dipahami",
+    "Dunia sekolah open-world yang luas dan interaktif",
+    "Kustomisasi karakter, pakaian, dan gaya unik",
+    "Berteman, berpetualang, dan jelajahi kampus",
+    "Sakura School Simulator APK gratis tanpa biaya",
+    "Kompatibel dengan mayoritas perangkat Android",
   ],
   stats: [
-    { value: "250K+", label: "Judul Konten" },
-    { value: "5.3", label: "Versi Terbaru" },
-    { value: "24/7", label: "Akses Tanpa Batas" },
+    { value: "Gratis", label: "Unduh APK" },
+    { value: "Open", label: "World Game" },
+    { value: "Android", label: "Platform" },
   ],
-  cta: "Mulai Sekarang",
+  cta: "Unduh APK Sekarang",
 } as const;
 
 export const navLinks = [
@@ -96,46 +97,46 @@ export const navLinks = [
 
 export const featuresCopy = {
   id: "fitur",
-  kicker: "Keunggulan Platform",
-  title: "Semua yang Anda Butuhkan",
+  kicker: "Fitur Utama",
+  title: "Fitur Sakura School Simulator",
   description:
-    "Dari streaming HD hingga siaran langsung — setiap fitur dirancang untuk pengalaman hiburan tanpa kompromi.",
+    "Semua yang membuat Sakura School Simulator APK menjadi game simulasi sekolah favorit jutaan pemain di seluruh dunia.",
   items: [
     {
       icon: "Film" as const,
-      title: "250.000+ Konten",
+      title: "Dunia Open-World",
       description:
-        "Film, serial TV, anime, dan dokumenter dari seluruh dunia dalam satu katalog yang terus diperbarui.",
+        "Jelajahi kampus Sakura yang luas — dari ruang kelas, koridor, taman, hingga area kota dengan kebebasan penuh.",
     },
     {
       icon: "Radio" as const,
-      title: "Siaran Olahraga Live",
+      title: "Simulasi Interaktif",
       description:
-        "Nikmati pertandingan langsung dengan kualitas streaming stabil dan latensi rendah.",
+        "Berinteraksi dengan NPC, temukan misi tersembunyi, dan ciptakan cerita unik setiap kali bermain.",
     },
     {
       icon: "MonitorSmartphone" as const,
-      title: "Multi-Perangkat",
+      title: "Kustomisasi Karakter",
       description:
-        "Android, Smart TV, tablet — tonton di mana saja dengan antarmuka yang responsif.",
+        "Desain penampilan karakter Anda — pilih pakaian, aksesori, gaya rambut, dan ekspresi sesuai kreativitas.",
     },
     {
       icon: "Zap" as const,
-      title: "Streaming Cepat",
+      title: "Performa Lancar",
       description:
-        "Optimasi server untuk buffering minimal dan kualitas video adaptif sesuai koneksi Anda.",
+        "Sakura School Simulator APK dioptimalkan untuk berjalan mulus di berbagai perangkat Android dengan spesifikasi menengah.",
     },
     {
       icon: "Shield" as const,
-      title: "Aman & Terpercaya",
+      title: "Unduhan Aman",
       description:
-        "Unduhan resmi dari server kami. Tanpa malware, tanpa iklan mengganggu.",
+        "File APK diunduh langsung dari server resmi kami. Tanpa malware, tanpa modifikasi berbahaya.",
     },
     {
       icon: "Heart" as const,
-      title: "Gratis Selamanya",
+      title: "Gratis & Tanpa Batas",
       description:
-        "Tanpa langganan bulanan, tanpa biaya tersembunyi. Hiburan premium tanpa batas.",
+        "Mainkan Sakura School Simulator tanpa biaya langganan. Unduh APK sekali, nikmati petualangan tanpa batas.",
     },
   ],
 } as const;
@@ -143,52 +144,52 @@ export const featuresCopy = {
 export const faqCopy = {
   id: "faq",
   kicker: "Pertanyaan Umum",
-  title: "FAQ",
+  title: "FAQ Sakura School Simulator APK",
   description:
-    "Jawaban untuk pertanyaan yang paling sering diajukan tentang Cinemana Shabakaty.",
+    "Jawaban lengkap seputar unduhan, instalasi, dan penggunaan Sakura School Simulator APK.",
   items: [
     {
-      question: "Apakah Cinemana Shabakaty benar-benar gratis?",
+      question: "Apa itu Sakura School Simulator APK?",
       answer:
-        "Ya. Aplikasi ini sepenuhnya gratis tanpa biaya langganan atau pembayaran tersembunyi. Anda dapat mengakses seluruh katalog konten tanpa membayar.",
+        "Sakura School Simulator APK adalah file instalasi Android untuk game simulasi sekolah open-world Sakura School Simulator. APK memungkinkan Anda menginstal game langsung di perangkat Android tanpa melalui Google Play Store.",
     },
     {
-      question: "Perangkat apa saja yang didukung?",
+      question: "Apakah Sakura School Simulator APK gratis?",
       answer:
-        "Aplikasi mendukung perangkat Android, Smart TV, tablet, dan perangkat kompatibel lainnya. Pastikan perangkat Anda memenuhi persyaratan minimum untuk pengalaman terbaik.",
+        "Ya. Anda dapat mengunduh Sakura School Simulator APK secara gratis dari situs ini tanpa biaya langganan, pembayaran tersembunyi, atau registrasi akun.",
     },
     {
-      question: "Bagaimana cara mengunduh dan menginstal aplikasi?",
+      question: "Bagaimana cara mengunduh Sakura School Simulator APK?",
       answer:
-        'Klik tombol "Unduh Sekarang", buka file APK yang diunduh, izinkan instalasi dari sumber tepercaya di pengaturan perangkat, lalu ikuti petunjuk instalasi.',
+        'Klik tombol "Unduh APK Sekarang", tunggu file selesai diunduh, buka file APK, izinkan instalasi dari sumber tidak dikenal di pengaturan Android, lalu ikuti petunjuk instalasi.',
     },
     {
-      question: "Apakah perlu membuat akun atau registrasi?",
+      question: "Perangkat apa yang mendukung Sakura School Simulator APK?",
       answer:
-        "Tidak. Anda dapat langsung menggunakan aplikasi tanpa registrasi, login, atau verifikasi email.",
+        "Sakura School Simulator APK mendukung perangkat Android 7.0 (Nougat) ke atas. Disarankan RAM minimal 3 GB dan ruang penyimpanan kosong minimal 500 MB untuk pengalaman optimal.",
     },
     {
-      question: "Seberapa sering konten diperbarui?",
+      question: "Apakah Sakura School Simulator APK aman diunduh dari sini?",
       answer:
-        "Katalog konten diperbarui secara berkala. Tim kami menambahkan judul baru dan memperbarui versi aplikasi untuk performa dan keamanan yang lebih baik.",
+        "Ya. File APK diunduh langsung dari server resmi kami dan diperbarui secara berkala. Hindari mengunduh dari sumber tidak dikenal untuk mencegah file palsu atau berbahaya.",
     },
     {
-      question: "Apakah aman mengunduh dari situs ini?",
+      question: "Apakah perlu akun untuk bermain?",
       answer:
-        "Ya. File APK diunduh langsung dari server resmi kami. Pastikan Anda mengunduh hanya dari situs ini untuk menghindari file palsu dari pihak ketiga.",
+        "Tidak. Setelah menginstal Sakura School Simulator APK, Anda dapat langsung bermain tanpa registrasi, login, atau verifikasi email.",
     },
   ],
 } as const;
 
 export const conclusionCopy = {
-  title: "Siap Menikmati Hiburan Tanpa Batas?",
+  title: "Siap Mainkan Sakura School Simulator?",
   description:
-    "Unduh Cinemana Shabakaty sekarang dan akses 250.000+ konten hiburan premium — gratis, aman, dan tanpa registrasi.",
-  cta: "Unduh Sekarang",
+    "Unduh Sakura School Simulator APK sekarang dan mulai petualangan sekolah open-world Anda — gratis, aman, dan siap dimainkan dalam hitungan menit.",
+  cta: "Unduh APK Sekarang",
 } as const;
 
 export const footerCopy = {
-  tagline: "Platform hiburan generasi berikutnya.",
+  tagline: "Sumber terpercaya untuk unduh Sakura School Simulator APK.",
   links: [
     { label: "Beranda", href: "#beranda" },
     { label: "Fitur", href: "#fitur" },

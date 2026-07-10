@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Clapperboard, Menu } from "lucide-react";
+import { Gamepad2, Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -15,10 +15,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { DownloadButton } from "@/components/ui/download-button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { navLinks, siteConfig } from "@/lib/site-config";
+import type { NavLink, SiteConfigData } from "@/lib/content-types";
+import { fallbackSiteSettings } from "@/lib/wordpress/fallbacks";
 import { cn } from "@/lib/utils";
 
-export function Navbar() {
+interface NavbarProps {
+  siteConfig?: SiteConfigData;
+  navLinks?: NavLink[];
+  ctaLabel?: string;
+}
+
+export function Navbar({
+  siteConfig = fallbackSiteSettings.siteConfig,
+  navLinks = fallbackSiteSettings.navLinks,
+  ctaLabel = fallbackSiteSettings.heroCopy.ctaPrimary,
+}: NavbarProps) {
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
@@ -43,11 +54,11 @@ export function Navbar() {
         className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-6"
       >
         <Link
-          href="#beranda"
+          href="/#beranda"
           className="flex items-center gap-2.5 text-[0.9375rem] font-semibold tracking-tight text-foreground"
         >
           <span className="flex size-7 items-center justify-center rounded-lg bg-primary/15">
-            <Clapperboard className="size-4 text-primary-hover" aria-hidden="true" />
+            <Gamepad2 className="size-4 text-primary-hover" aria-hidden="true" />
           </span>
           {siteConfig.shortName}
         </Link>
@@ -67,8 +78,12 @@ export function Navbar() {
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
-          <DownloadButton size="sm" className="hidden sm:inline-flex">
-            Unduh Sekarang
+          <DownloadButton
+            size="sm"
+            className="hidden sm:inline-flex"
+            fileUrl={siteConfig.downloadFile}
+          >
+            {ctaLabel}
           </DownloadButton>
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -87,7 +102,7 @@ export function Navbar() {
               <SheetHeader className="border-b border-border px-6 py-5">
                 <SheetTitle className="flex items-center gap-2.5">
                   <span className="flex size-7 items-center justify-center rounded-lg bg-primary/15">
-                    <Clapperboard
+                    <Gamepad2
                       className="size-4 text-primary-hover"
                       aria-hidden="true"
                     />
@@ -116,7 +131,9 @@ export function Navbar() {
                   <span className="text-sm text-muted-foreground">Tema</span>
                   <ThemeToggle />
                 </div>
-                <DownloadButton className="w-full">Unduh Sekarang</DownloadButton>
+                <DownloadButton className="w-full" fileUrl={siteConfig.downloadFile}>
+                  {ctaLabel}
+                </DownloadButton>
               </SheetFooter>
             </SheetContent>
           </Sheet>

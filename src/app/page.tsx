@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { AppChrome } from "@/components/layout/app-chrome";
 import { AboutSite } from "@/components/sections/about-site";
 import { Conclusion } from "@/components/sections/conclusion";
 import { DownloadGuides } from "@/components/sections/download-guides";
 import { Faq } from "@/components/sections/faq";
 import { Features } from "@/components/sections/features";
 import { Hero } from "@/components/sections/hero";
-import { siteConfig } from "@/lib/site-config";
 import {
   faqPageSchema,
   JsonLd,
@@ -17,38 +14,62 @@ import {
   webPageSchema,
   webSiteSchema,
 } from "@/lib/schema";
+import { getFaqs, getSiteSettings } from "@/lib/wordpress";
 
-export const metadata: Metadata = {
-  title: `${siteConfig.name} — Unduh APK Gratis | 250.000+ Film & Serial`,
-  description:
-    "Unduh Cinemana Shabakaty APK gratis. Akses 250.000+ film, serial, anime, dan siaran olahraga langsung. Tanpa registrasi, aman, dan gratis selamanya.",
-  alternates: {
-    canonical: "/",
-  },
-};
+export const revalidate = 3600;
 
-export default function Home() {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const { siteConfig } = settings;
+
+  return {
+    title: `${siteConfig.mainKeyword} — Unduh Gratis | Android`,
+    description: siteConfig.description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: `${siteConfig.mainKeyword} — Unduh Gratis untuk Android`,
+      description: siteConfig.description,
+      url: siteConfig.url,
+      images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+    },
+  };
+}
+
+export default async function Home() {
+  const settings = await getSiteSettings();
+  const faqItems = await getFaqs();
+
   return (
     <>
       <JsonLd
         data={[
-          organizationSchema(),
-          webSiteSchema(),
-          webPageSchema(),
-          softwareApplicationSchema(),
-          faqPageSchema(),
+          organizationSchema(settings.siteConfig),
+          webSiteSchema(settings.siteConfig),
+          webPageSchema(settings.siteConfig),
+          softwareApplicationSchema(settings.siteConfig),
+          faqPageSchema(faqItems),
         ]}
       />
-      <Navbar />
-      <main id="main-content">
-        <Hero />
-        <DownloadGuides />
-        <AboutSite />
-        <Features />
-        <Faq />
-        <Conclusion />
-      </main>
-      <Footer />
+      <AppChrome>
+        <main id="main-content">
+          <Hero copy={settings.heroCopy} siteConfig={settings.siteConfig} />
+          <DownloadGuides
+            copy={settings.downloadGuideCopy}
+            heroCta={settings.heroCopy}
+            siteConfig={settings.siteConfig}
+          />
+          <AboutSite
+            copy={settings.aboutCopy}
+            siteConfig={settings.siteConfig}
+          />
+          <Features copy={settings.featuresCopy} />
+          <Faq copy={settings.faqCopy} items={faqItems} />
+          <Conclusion
+            copy={settings.conclusionCopy}
+            siteConfig={settings.siteConfig}
+          />
+        </main>
+      </AppChrome>
     </>
   );
 }

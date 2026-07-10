@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/wordpress";
+import { siteConfig as fallbackSiteConfig } from "@/lib/site-config";
 import "./globals.css";
 
 const heading = Geist({
@@ -16,73 +17,91 @@ const body = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.name} — Unduh APK Gratis | Platform Hiburan Premium`,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [
-    "Cinemana Shabakaty",
-    "Cinemana APK",
-    "unduh Cinemana",
-    "streaming gratis",
-    "film gratis",
-    "anime streaming",
-    "siaran olahraga live",
-    "aplikasi hiburan Android",
-    "Smart TV streaming",
-  ],
-  authors: [{ name: siteConfig.name, url: siteConfig.url }],
-  creator: siteConfig.name,
-  publisher: siteConfig.name,
-  category: "entertainment",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: siteConfig.locale,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    title: `${siteConfig.name} — Unduh APK Gratis | Platform Hiburan Premium`,
-    description: siteConfig.description,
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: `${siteConfig.name} — Platform Hiburan Premium`,
-      },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const config = settings.siteConfig;
+
+  return {
+    metadataBase: new URL(config.url),
+    title: {
+      default: `${config.mainKeyword} — Unduh Gratis untuk Android`,
+      template: `%s | ${config.shortName}`,
+    },
+    description: config.description,
+    keywords: [
+      config.mainKeyword,
+      "sakura school simulator",
+      "unduh sakura school simulator",
+      "sakura school simulator android",
+      "download sakura school simulator APK",
+      "game simulasi sekolah",
+      "sakura school simulator gratis",
+      "APK sakura school simulator terbaru",
+      "sakura school simulator indonesia",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${siteConfig.name} — Unduh APK Gratis`,
-    description: siteConfig.description,
-    images: ["/opengraph-image"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    authors: [{ name: config.name, url: config.url }],
+    creator: config.name,
+    publisher: config.name,
+    category: "games",
+    alternates: {
+      canonical: "/",
+      types: {
+        "application/rss+xml": `${config.url}/feed.xml`,
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale: config.locale,
+      url: config.url,
+      siteName: config.name,
+      title: `${config.mainKeyword} — Unduh Gratis untuk Android`,
+      description: config.description,
+      images: [
+        {
+          url: "/opengraph-image",
+          width: 1200,
+          height: 630,
+          alt: `${config.mainKeyword} — Unduh Gratis`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${config.mainKeyword} — Unduh Gratis`,
+      description: config.description,
+      images: ["/opengraph-image"],
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-};
+  };
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const feedUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? fallbackSiteConfig.url}/feed.xml`;
+
   return (
     <html lang="id" suppressHydrationWarning className={`${heading.variable} ${body.variable}`}>
+      <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="RSS Feed"
+          href={feedUrl}
+        />
+      </head>
       <body className="antialiased">
         <ThemeProvider>
           <a

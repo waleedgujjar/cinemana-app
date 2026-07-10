@@ -8,7 +8,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange={false}
-      storageKey="cinemana-theme"
+      storageKey="sakura-theme"
       {...props}
     >
       {children}

@@ -1,8 +1,17 @@
 import Link from "next/link";
-import { Clapperboard } from "lucide-react";
-import { footerCopy, siteConfig } from "@/lib/site-config";
+import { Gamepad2 } from "lucide-react";
+import type { FooterCopy, SiteConfigData } from "@/lib/content-types";
+import { fallbackSiteSettings } from "@/lib/wordpress/fallbacks";
 
-export function Footer() {
+interface FooterProps {
+  siteConfig?: SiteConfigData;
+  footerCopy?: FooterCopy;
+}
+
+export function Footer({
+  siteConfig = fallbackSiteSettings.siteConfig,
+  footerCopy = fallbackSiteSettings.footerCopy,
+}: FooterProps) {
   const year = new Date().getFullYear();
 
   return (
@@ -11,11 +20,11 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-8 sm:flex-row sm:items-start">
           <div className="text-center sm:text-left">
             <Link
-              href="#beranda"
+              href="/#beranda"
               className="inline-flex items-center gap-2.5 text-[0.9375rem] font-semibold tracking-tight text-foreground"
             >
               <span className="flex size-7 items-center justify-center rounded-lg bg-primary/15">
-                <Clapperboard className="size-4 text-primary-hover" aria-hidden="true" />
+                <Gamepad2 className="size-4 text-primary-hover" aria-hidden="true" />
               </span>
               {siteConfig.shortName}
             </Link>

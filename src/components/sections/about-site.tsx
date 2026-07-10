@@ -3,19 +3,29 @@ import { Reveal } from "@/components/motion/reveal";
 import { DownloadButton } from "@/components/ui/download-button";
 import { PremiumMediaFrame } from "@/components/ui/premium-media-frame";
 import { SectionHeader } from "@/components/ui/section-header";
-import { aboutCopy } from "@/lib/site-config";
+import type { AboutCopy, SiteConfigData } from "@/lib/content-types";
+import { fallbackSiteSettings } from "@/lib/wordpress/fallbacks";
 import { cn } from "@/lib/utils";
 
-export function AboutSite() {
+interface AboutSiteProps {
+  copy?: AboutCopy;
+  siteConfig?: SiteConfigData;
+}
+
+export function AboutSite({
+  copy = fallbackSiteSettings.aboutCopy,
+  siteConfig = fallbackSiteSettings.siteConfig,
+}: AboutSiteProps) {
+  const promoImage = copy.promoImage ?? "/images/about-promo.png";
+
   return (
     <section
-      id={aboutCopy.id}
+      id={copy.id}
       aria-labelledby="about-heading"
       className="section-ambient about-gradient section-padding"
     >
       <div className="section-container relative z-10">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
-          {/* Left — integrated floating media */}
           <Reveal>
             <div className="relative lg:pr-4">
               <div
@@ -28,8 +38,8 @@ export function AboutSite() {
               />
 
               <PremiumMediaFrame
-                src="/images/about-promo.png"
-                alt="Grafik promosi platform hiburan dengan antarmuka premium dan pencahayaan ungu"
+                src={promoImage}
+                alt="Grafik promosi Sakura School Simulator APK dengan karakter sekolah dan pencahayaan ungu"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 aspectClass="aspect-square"
                 objectFit="cover"
@@ -38,30 +48,30 @@ export function AboutSite() {
                 glowPosition="left"
               />
 
-              {/* Overlapping stat card */}
               <div className="absolute -bottom-5 -right-2 stat-pill rounded-2xl px-5 py-4 sm:right-4 lg:-right-6">
                 <p className="text-2xl font-semibold tracking-tight text-foreground">
-                  250K+
+                  {copy.stats[0]?.value}
                 </p>
-                <p className="text-xs text-muted-foreground">Judul Konten</p>
+                <p className="text-xs text-muted-foreground">
+                  {copy.stats[0]?.label}
+                </p>
               </div>
             </div>
           </Reveal>
 
-          {/* Right — copy & features */}
           <div>
             <Reveal delay={0.1}>
               <SectionHeader
                 titleId="about-heading"
-                kicker={aboutCopy.kicker}
-                title={aboutCopy.title}
-                description={aboutCopy.subtitle}
+                kicker={copy.kicker}
+                title={copy.title}
+                description={copy.subtitle}
               />
             </Reveal>
 
             <Reveal delay={0.15}>
               <div className="mt-8 space-y-4">
-                {aboutCopy.paragraphs.map((paragraph) => (
+                {copy.paragraphs.map((paragraph) => (
                   <p
                     key={paragraph.slice(0, 40)}
                     className="text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base"
@@ -74,7 +84,7 @@ export function AboutSite() {
 
             <Reveal delay={0.2}>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {aboutCopy.features.map((feature) => (
+                {copy.features.map((feature) => (
                   <div
                     key={feature}
                     className={cn(
@@ -98,7 +108,7 @@ export function AboutSite() {
 
             <Reveal delay={0.25}>
               <dl className="mt-10 grid grid-cols-3 gap-4">
-                {aboutCopy.stats.map((stat) => (
+                {copy.stats.map((stat) => (
                   <div
                     key={stat.label}
                     className="stat-pill rounded-xl px-4 py-4 text-center"
@@ -116,7 +126,9 @@ export function AboutSite() {
 
             <Reveal delay={0.3}>
               <div className="mt-10">
-                <DownloadButton size="lg">{aboutCopy.cta}</DownloadButton>
+                <DownloadButton size="lg" fileUrl={siteConfig.downloadFile}>
+                  {copy.cta}
+                </DownloadButton>
               </div>
             </Reveal>
           </div>

@@ -3,12 +3,23 @@ import Link from "next/link";
 import { BadgeCheck, ShieldCheck, Zap } from "lucide-react";
 import { DownloadButton } from "@/components/ui/download-button";
 import { buttonVariants } from "@/components/ui/button";
-import { heroCopy, siteConfig } from "@/lib/site-config";
+import type { HeroCopy, SiteConfigData } from "@/lib/content-types";
+import { fallbackSiteSettings } from "@/lib/wordpress/fallbacks";
 import { cn } from "@/lib/utils";
 
 const trustIcons = [BadgeCheck, Zap, ShieldCheck];
 
-export function Hero() {
+interface HeroProps {
+  copy?: HeroCopy;
+  siteConfig?: SiteConfigData;
+}
+
+export function Hero({
+  copy = fallbackSiteSettings.heroCopy,
+  siteConfig = fallbackSiteSettings.siteConfig,
+}: HeroProps) {
+  const backgroundImage = copy.backgroundImage ?? "/images/hero-sakura-wide.png";
+
   return (
     <section
       id="beranda"
@@ -17,8 +28,8 @@ export function Hero() {
     >
       <div className="absolute inset-0">
         <Image
-          src="/images/hero-sakura-wide.png"
-          alt="Latar belakang sinematik premium dengan suasana sekolah, pencahayaan ungu neon, dan atmosfer hiburan"
+          src={backgroundImage}
+          alt="Latar belakang Sakura School Simulator dengan suasana sekolah, pencahayaan ungu neon, dan atmosfer game simulasi"
           fill
           priority
           sizes="100vw"
@@ -47,22 +58,24 @@ export function Hero() {
       <div className="relative mx-auto grid min-h-svh max-w-7xl items-center px-6 py-28 sm:py-32 lg:grid-cols-[48fr_52fr] lg:gap-10 lg:py-36">
         <div className="relative z-10 max-w-xl lg:max-w-lg xl:max-w-xl">
           <p className="hero-animate hero-badge inline-flex items-center gap-2 rounded-full border border-primary/30 px-3.5 py-1.5 text-[0.8125rem] font-medium text-primary">
-            {heroCopy.kicker} · {siteConfig.version}
+            {copy.kicker} · {siteConfig.version}
           </p>
 
           <h1
             id="hero-heading"
             className="hero-animate hero-animate-delay-1 hero-heading-shadow mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]"
           >
-            {heroCopy.headline}
+            {copy.headline}
           </h1>
 
           <p className="hero-animate hero-animate-delay-1 mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {heroCopy.subhead}
+            {copy.subhead}
           </p>
 
           <div className="hero-animate hero-animate-delay-2 mt-9 flex flex-wrap items-center gap-3">
-            <DownloadButton size="lg">{heroCopy.ctaPrimary}</DownloadButton>
+            <DownloadButton size="lg" fileUrl={siteConfig.downloadFile}>
+              {copy.ctaPrimary}
+            </DownloadButton>
             <Link
               href="#fitur"
               className={cn(
@@ -70,12 +83,12 @@ export function Hero() {
                 "hero-outline-btn"
               )}
             >
-              {heroCopy.ctaSecondary}
+              {copy.ctaSecondary}
             </Link>
           </div>
 
           <ul className="hero-animate hero-animate-delay-2 mt-10 flex flex-wrap items-center gap-x-5 gap-y-3">
-            {heroCopy.trust.map((item, i) => {
+            {copy.trust.map((item, i) => {
               const Icon = trustIcons[i];
               return (
                 <li
@@ -90,7 +103,7 @@ export function Hero() {
           </ul>
 
           <dl className="hero-animate hero-animate-delay-3 hero-divider mt-10 grid max-w-md grid-cols-3 gap-4 border-t pt-8 sm:gap-6">
-            {heroCopy.stats.map((stat) => (
+            {copy.stats.map((stat) => (
               <div key={stat.label}>
                 <dd className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                   {stat.value}
