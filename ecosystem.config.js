@@ -1,8 +1,10 @@
+const path = require("path");
+
 module.exports = {
   apps: [
     {
       name: "sakuraschoolsimulator",
-      cwd: "/home/sakuraschoolsimulator/htdocs/sakuraschoolsimulator.net",
+      cwd: __dirname,
       script: "npm",
       args: "run start",
       env: {
@@ -12,6 +14,10 @@ module.exports = {
       instances: 1,
       autorestart: true,
       max_memory_restart: "512M",
+      error_file: path.join(__dirname, "logs", "pm2-error.log"),
+      out_file: path.join(__dirname, "logs", "pm2-out.log"),
+      merge_logs: true,
+      time: true,
     },
   ],
 };
