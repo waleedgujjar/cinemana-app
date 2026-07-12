@@ -45,6 +45,7 @@ export const POST_CARD_FRAGMENT = `
     }
     categories {
       nodes {
+        databaseId
         name
         slug
       }

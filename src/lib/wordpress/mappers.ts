@@ -101,7 +101,7 @@ export function mapWpPost(node: {
   modified: string;
   featuredImage?: { node?: Parameters<typeof mapMedia>[0] };
   author?: { node?: { name: string; slug: string } };
-  categories?: { nodes?: { name: string; slug: string }[] };
+  categories?: { nodes?: { databaseId?: number; name: string; slug: string }[] };
   tags?: { nodes?: { name: string; slug: string }[] };
   seo?: Parameters<typeof mapWpSeo>[0];
 }): WpPost {
@@ -122,7 +122,12 @@ export function mapWpPost(node: {
     modified: node.modified,
     featuredImage,
     author,
-    categories: node.categories?.nodes ?? [],
+    categories:
+      node.categories?.nodes?.map((c) => ({
+        databaseId: c.databaseId,
+        name: c.name,
+        slug: c.slug,
+      })) ?? [],
     tags: node.tags?.nodes ?? [],
     seo: mapWpSeo(node.seo),
   };

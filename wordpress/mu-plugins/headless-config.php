@@ -113,7 +113,7 @@ add_action('template_redirect', 'headless_redirect_frontend');
 /**
  * Trigger Next.js on-demand revalidation after content changes.
  */
-function headless_trigger_revalidation(string $post_type = ''): void {
+function headless_trigger_revalidation(string $post_type = '', string $post_slug = ''): void {
     $frontend_url = defined('HEADLESS_FRONTEND_URL')
         ? HEADLESS_FRONTEND_URL
         : getenv('HEADLESS_FRONTEND_URL');
@@ -130,6 +130,10 @@ function headless_trigger_revalidation(string $post_type = ''): void {
 
     if ($post_type === 'post') {
         $tags[] = 'posts';
+        if ($post_slug !== '') {
+            $paths[] = '/blog/' . $post_slug;
+            $tags[] = 'post-' . $post_slug;
+        }
     }
 
     if ($post_type === 'faq') {
@@ -142,8 +146,8 @@ function headless_trigger_revalidation(string $post_type = ''): void {
             'timeout' => 10,
             'headers' => ['Content-Type' => 'application/json'],
             'body' => wp_json_encode([
-                'paths' => $paths,
-                'tags' => array_unique($tags),
+                'paths' => array_values(array_unique($paths)),
+                'tags' => array_values(array_unique($tags)),
             ]),
         ]
     );
@@ -153,7 +157,9 @@ function headless_on_save_post(int $post_id, WP_Post $post): void {
     if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
         return;
     }
-    headless_trigger_revalidation($post->post_type);
+
+    $slug = $post->post_name ?? '';
+    headless_trigger_revalidation($post->post_type, $slug);
 }
 add_action('save_post', 'headless_on_save_post', 10, 2);
 

@@ -80,34 +80,58 @@ export const getFaqs = cache(async (): Promise<FaqItem[]> => {
   }
 });
 
+const emptyPostsResult: WpPostsResult = {
+  posts: [],
+  pageInfo: {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null,
+  },
+  total: 0,
+};
+
 export async function getPosts(options: {
   first?: number;
   after?: string | null;
   search?: string;
 } = {}): Promise<WpPostsResult> {
   if (!isWordPressConfigured()) {
-    return { posts: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, startCursor: null, endCursor: null }, total: 0 };
+    console.warn(
+      "[wordpress] getPosts: WORDPRESS_GRAPHQL_URL is not configured — returning empty list"
+    );
+    return emptyPostsResult;
   }
 
   const { first = 10, after = null, search } = options;
   const preview = await isPreviewMode();
 
-  const data = await executeQuery<{
-    posts: {
-      pageInfo: WpPostsResult["pageInfo"];
-      nodes: Parameters<typeof mapWpPost>[0][];
-    };
-  }>(
-    POSTS_QUERY,
-    { first, after, search: search || null },
-    { tags: [CACHE_TAGS.posts], preview }
-  );
+  try {
+    const data = await executeQuery<{
+      posts: {
+        pageInfo: WpPostsResult["pageInfo"];
+        nodes: Parameters<typeof mapWpPost>[0][];
+      };
+    }>(
+      POSTS_QUERY,
+      { first, after, search: search || null },
+      { tags: [CACHE_TAGS.posts], preview }
+    );
 
-  return mapPostsResult(data);
+    return mapPostsResult(data);
+  } catch (error) {
+    console.error("[wordpress] getPosts failed:", error);
+    return emptyPostsResult;
+  }
 }
 
 export async function getPostBySlug(slug: string): Promise<WpPost | null> {
-  if (!isWordPressConfigured()) return null;
+  if (!isWordPressConfigured()) {
+    console.warn(
+      "[wordpress] getPostBySlug: WORDPRESS_GRAPHQL_URL is not configured"
+    );
+    return null;
+  }
 
   const preview = await isPreviewMode();
 
@@ -254,7 +278,11 @@ export async function getRelatedPosts(
 ): Promise<WpPost[]> {
   if (!isWordPressConfigured() || !post.categories.length) return [];
 
-  const categoryIds = post.categories.map((c) => c.slug);
+  const categoryIds = post.categories
+    .map((c) => c.databaseId)
+    .filter((id): id is number => typeof id === "number" && id > 0);
+
+  if (!categoryIds.length) return [];
 
   try {
     const data = await executeQuery<{

@@ -24,6 +24,19 @@ if [ ! -f .env.production ]; then
   exit 1
 fi
 
+echo "==> Verify WordPress environment"
+grep -E '^(NEXT_PUBLIC_SITE_URL|NEXT_PUBLIC_WORDPRESS_URL|WORDPRESS_GRAPHQL_URL|NODE_ENV|PORT)=' .env.production || true
+if ! grep -q '^WORDPRESS_GRAPHQL_URL=https://' .env.production; then
+  echo "ERROR: WORDPRESS_GRAPHQL_URL must be set in .env.production"
+  exit 1
+fi
+
+echo "==> Test GraphQL connectivity"
+curl -sf -X POST "$(grep '^WORDPRESS_GRAPHQL_URL=' .env.production | cut -d= -f2-)" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ posts(first:1) { nodes { slug title } } }"}' | head -c 200
+echo ""
+
 echo "==> Build production app"
 export NODE_ENV=production
 npm run build

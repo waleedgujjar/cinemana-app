@@ -205,6 +205,7 @@ export interface WpAuthor {
 }
 
 export interface WpTerm {
+  databaseId?: number;
   name: string;
   slug: string;
 }
