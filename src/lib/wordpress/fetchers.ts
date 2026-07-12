@@ -132,30 +132,35 @@ export async function getAllPostSlugs(): Promise<
 > {
   if (!isWordPressConfigured()) return [];
 
-  const slugs: { slug: string; modified: string }[] = [];
-  let after: string | null = null;
-  let hasNextPage = true;
+  try {
+    const slugs: { slug: string; modified: string }[] = [];
+    let after: string | null = null;
+    let hasNextPage = true;
 
-  type SlugBatch = {
-    posts: {
-      pageInfo: { hasNextPage: boolean; endCursor: string | null };
-      nodes: { slug: string; modified: string }[];
+    type SlugBatch = {
+      posts: {
+        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        nodes: { slug: string; modified: string }[];
+      };
     };
-  };
 
-  while (hasNextPage) {
-    const data: SlugBatch = await executeQuery<SlugBatch>(
-      POST_SLUGS_QUERY,
-      { first: 100, after },
-      { tags: [CACHE_TAGS.posts] }
-    );
+    while (hasNextPage) {
+      const data: SlugBatch = await executeQuery<SlugBatch>(
+        POST_SLUGS_QUERY,
+        { first: 100, after },
+        { tags: [CACHE_TAGS.posts] }
+      );
 
-    slugs.push(...data.posts.nodes);
-    hasNextPage = data.posts.pageInfo.hasNextPage;
-    after = data.posts.pageInfo.endCursor;
+      slugs.push(...data.posts.nodes);
+      hasNextPage = data.posts.pageInfo.hasNextPage;
+      after = data.posts.pageInfo.endCursor;
+    }
+
+    return slugs;
+  } catch (error) {
+    console.error("[wordpress] getAllPostSlugs failed:", error);
+    return [];
   }
-
-  return slugs;
 }
 
 export async function getPostsByCategory(
@@ -327,36 +332,41 @@ export async function getSitemapData(): Promise<{
     return { posts: [], categories: [], tags: [] };
   }
 
-  const posts: { slug: string; modified: string }[] = [];
-  let after: string | null = null;
-  let hasNextPage = true;
-  let categories: { slug: string }[] = [];
-  let tags: { slug: string }[] = [];
+  try {
+    const posts: { slug: string; modified: string }[] = [];
+    let after: string | null = null;
+    let hasNextPage = true;
+    let categories: { slug: string }[] = [];
+    let tags: { slug: string }[] = [];
 
-  type SitemapBatch = {
-    posts: {
-      pageInfo: { hasNextPage: boolean; endCursor: string | null };
-      nodes: { slug: string; modified: string }[];
+    type SitemapBatch = {
+      posts: {
+        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        nodes: { slug: string; modified: string }[];
+      };
+      categories: { nodes: { slug: string }[] };
+      tags: { nodes: { slug: string }[] };
     };
-    categories: { nodes: { slug: string }[] };
-    tags: { nodes: { slug: string }[] };
-  };
 
-  while (hasNextPage) {
-    const data: SitemapBatch = await executeQuery<SitemapBatch>(
-      SITEMAP_POSTS_QUERY,
-      { first: 100, after },
-      { tags: [CACHE_TAGS.posts] }
-    );
+    while (hasNextPage) {
+      const data: SitemapBatch = await executeQuery<SitemapBatch>(
+        SITEMAP_POSTS_QUERY,
+        { first: 100, after },
+        { tags: [CACHE_TAGS.posts] }
+      );
 
-    posts.push(...data.posts.nodes);
-    categories = data.categories.nodes;
-    tags = data.tags.nodes;
-    hasNextPage = data.posts.pageInfo.hasNextPage;
-    after = data.posts.pageInfo.endCursor;
+      posts.push(...data.posts.nodes);
+      categories = data.categories.nodes;
+      tags = data.tags.nodes;
+      hasNextPage = data.posts.pageInfo.hasNextPage;
+      after = data.posts.pageInfo.endCursor;
+    }
+
+    return { posts, categories, tags };
+  } catch (error) {
+    console.error("[wordpress] getSitemapData failed:", error);
+    return { posts: [], categories: [], tags: [] };
   }
-
-  return { posts, categories, tags };
 }
 
 export async function getRssPosts(): Promise<
@@ -371,25 +381,30 @@ export async function getRssPosts(): Promise<
 > {
   if (!isWordPressConfigured()) return [];
 
-  const data = await executeQuery<{
-    posts: {
-      nodes: {
-        title: string;
-        slug: string;
-        excerpt: string;
-        date: string;
-        modified: string;
-        author?: { node?: { name?: string } };
-      }[];
-    };
-  }>(RSS_POSTS_QUERY, { first: 20 }, { tags: [CACHE_TAGS.posts] });
+  try {
+    const data = await executeQuery<{
+      posts: {
+        nodes: {
+          title: string;
+          slug: string;
+          excerpt: string;
+          date: string;
+          modified: string;
+          author?: { node?: { name?: string } };
+        }[];
+      };
+    }>(RSS_POSTS_QUERY, { first: 20 }, { tags: [CACHE_TAGS.posts] });
 
-  return data.posts.nodes.map((node) => ({
-    title: node.title,
-    slug: node.slug,
-    excerpt: node.excerpt.replace(/<[^>]*>/g, "").trim(),
-    date: node.date,
-    modified: node.modified,
-    author: node.author?.node?.name ?? "Admin",
-  }));
+    return data.posts.nodes.map((node) => ({
+      title: node.title,
+      slug: node.slug,
+      excerpt: node.excerpt.replace(/<[^>]*>/g, "").trim(),
+      date: node.date,
+      modified: node.modified,
+      author: node.author?.node?.name ?? "Admin",
+    }));
+  } catch (error) {
+    console.error("[wordpress] getRssPosts failed:", error);
+    return [];
+  }
 }

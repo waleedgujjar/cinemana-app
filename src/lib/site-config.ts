@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Sakura School Simulator",
   shortName: "Sakura School",
   version: "v1.042.20",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecinemana.org",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://sakuraschoolsimulator.net",
   description:
     "Unduh Sakura School Simulator APK gratis untuk Android. Jelajahi dunia sekolah terbuka, kustomisasi karakter, dan petualangan seru — aman, cepat, dan tanpa registrasi.",
   locale: "id_ID",
