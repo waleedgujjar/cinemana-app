@@ -1,14 +1,17 @@
 export const siteConfig = {
   name: "Sakura School Simulator",
   shortName: "Sakura School",
-  version: "v1.042.20",
+  version: "v1.048.03",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://sakuraschoolsimulator.net",
   description:
     "Unduh Sakura School Simulator APK gratis untuk Android. Jelajahi dunia sekolah terbuka, kustomisasi karakter, dan petualangan seru — aman, cepat, dan tanpa registrasi.",
   locale: "id_ID",
   mainKeyword: "sakura school simulator APK",
-  downloadFile: "/downloads/cinemana-shabakaty.apk",
+  downloadFile: "/downloads/sakura-school-simulator.apk",
   downloadFileName: "Sakura School Simulator APK",
+  downloadSaveName: "sakura-school-simulator.apk",
+  downloadFileSizeBytes: 265978841,
+  downloadFileSizeLabel: "254 MB",
 } as const;
 
 export const heroCopy = {

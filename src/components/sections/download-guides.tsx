@@ -103,7 +103,11 @@ export function DownloadGuides({
 
             <div className="mt-10 flex flex-col items-center gap-4 border-t section-divider pt-10 sm:flex-row sm:justify-between">
               <p className="text-center text-sm text-muted-foreground sm:text-left">
-                File APK resmi · {heroCta.ctaPrimary} · Tanpa registrasi
+                File APK resmi · Versi {siteConfig.version}
+                {siteConfig.downloadFileSizeLabel
+                  ? ` · ${siteConfig.downloadFileSizeLabel}`
+                  : ""}{" "}
+                · Tanpa registrasi
               </p>
               <DownloadButton
                 size="lg"

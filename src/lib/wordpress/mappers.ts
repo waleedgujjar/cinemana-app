@@ -251,6 +251,8 @@ export function mapSiteSettings(
     mainKeyword: meta?.mainKeyword ?? fb.siteConfig.mainKeyword,
     downloadFile: meta?.downloadFileUrl ?? fb.siteConfig.downloadFile,
     downloadFileName: meta?.downloadFileName ?? fb.siteConfig.downloadFileName,
+    downloadSaveName: fb.siteConfig.downloadSaveName,
+    downloadFileSizeLabel: fb.siteConfig.downloadFileSizeLabel,
   };
 
   const heroBg = mapMedia(fields.hero?.backgroundImage?.node);

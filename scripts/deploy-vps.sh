@@ -13,6 +13,18 @@ npm -v
 echo "==> Pull latest code"
 git pull origin master
 
+echo "==> Sync stable APK filename"
+STABLE_APK="public/downloads/sakura-school-simulator.apk"
+if [ -f "$STABLE_APK" ]; then
+  echo "    Using existing $STABLE_APK"
+elif ls public/downloads/SAKURA_*.apk >/dev/null 2>&1; then
+  SRC="$(ls -t public/downloads/SAKURA_*.apk | head -1)"
+  cp "$SRC" "$STABLE_APK"
+  echo "    Copied $SRC -> $STABLE_APK"
+else
+  echo "WARNING: No APK found in public/downloads/. Upload before going live."
+fi
+
 echo "==> Install dependencies"
 npm ci
 

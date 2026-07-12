@@ -28,6 +28,8 @@ export interface SiteConfigData {
   mainKeyword: string;
   downloadFile: string;
   downloadFileName: string;
+  downloadSaveName?: string;
+  downloadFileSizeLabel?: string;
 }
 
 export interface HeroCopy {

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seo:baseline": "node scripts/seo-baseline.mjs",
+    "seo:jsonld": "node scripts/validate-jsonld.mjs",
+    "lighthouse": "node scripts/lighthouse-ci.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

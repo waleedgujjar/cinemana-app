@@ -23,7 +23,19 @@ const wordpressImagePatterns = [
     : []),
 ];
 
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+];
+
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  compress: true,
   images: {
     qualities: [75, 85, 90],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -36,6 +48,25 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: securityHeaders,
+      },
+      {
+        source: "/downloads/:path*.apk",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/vnd.android.package-archive",
+          },
+          { key: "Content-Disposition", value: "attachment" },
+          { key: "Cache-Control", value: "public, max-age=86400" },
+        ],
+      },
+    ];
   },
 };
 

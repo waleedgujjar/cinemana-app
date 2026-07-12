@@ -8,6 +8,9 @@ import type { VariantProps } from "class-variance-authority";
 
 interface DownloadButtonProps {
   fileUrl?: string;
+  downloadName?: string;
+  version?: string;
+  fileSizeLabel?: string;
   size?: VariantProps<typeof buttonVariants>["size"];
   className?: string;
   children?: React.ReactNode;
@@ -15,15 +18,21 @@ interface DownloadButtonProps {
 
 export function DownloadButton({
   fileUrl = siteConfig.downloadFile,
+  downloadName = siteConfig.downloadSaveName,
+  version = siteConfig.version,
+  fileSizeLabel = siteConfig.downloadFileSizeLabel,
   size = "default",
   className,
   children,
 }: DownloadButtonProps) {
+  const sizeHint = fileSizeLabel ? `, ${fileSizeLabel}` : "";
+
   return (
     <a
       href={fileUrl}
-      download
-      aria-label={`Unduh ${siteConfig.downloadFileName}`}
+      download={downloadName}
+      aria-label={`Unduh ${siteConfig.downloadFileName}, versi ${version}${sizeHint}`}
+      type="application/vnd.android.package-archive"
       className={cn(buttonVariants({ variant: "default", size }), className)}
     >
       <Download aria-hidden="true" />

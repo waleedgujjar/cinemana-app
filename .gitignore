@@ -41,3 +41,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# APK binaries — keep stable placeholder in git; upload real file on VPS
+public/downloads/SAKURA_*.apk
+public/downloads/cinemana-shabakaty.apk

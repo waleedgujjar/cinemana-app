@@ -86,6 +86,12 @@ export function Hero({
               {copy.ctaSecondary}
             </Link>
           </div>
+          <p className="hero-animate hero-animate-delay-2 mt-3 text-sm text-muted-foreground">
+            Versi {siteConfig.version}
+            {siteConfig.downloadFileSizeLabel
+              ? ` · ${siteConfig.downloadFileSizeLabel}`
+              : ""}
+          </p>
 
           <ul className="hero-animate hero-animate-delay-2 mt-10 flex flex-wrap items-center gap-x-5 gap-y-3">
             {copy.trust.map((item, i) => {
