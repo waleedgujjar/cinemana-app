@@ -7,7 +7,16 @@ export type IconName =
   | "MonitorSmartphone"
   | "Zap"
   | "Shield"
-  | "Heart";
+  | "Heart"
+  | "Gamepad2"
+  | "Cpu"
+  | "Star"
+  | "Users"
+  | "Map"
+  | "Wrench"
+  | "CheckCircle"
+  | "XCircle"
+  | "AlertTriangle";
 
 export interface SiteConfigData {
   name: string;
@@ -101,6 +110,74 @@ export interface NavLink {
 export interface FooterCopy {
   tagline: string;
   links: NavLink[];
+}
+
+export interface ContentBlock {
+  title: string;
+  description: string;
+}
+
+export interface RequirementItem {
+  label: string;
+  value: string;
+  icon: IconName;
+}
+
+export interface RequirementsCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  minimum: RequirementItem[];
+  recommended: RequirementItem[];
+  note: string;
+}
+
+export interface GameplayCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  steps: { title: string; description: string }[];
+}
+
+export interface WhatsNewCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  highlights: string[];
+  versionNote: string;
+}
+
+export interface ProsConsCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  pros: string[];
+  cons: string[];
+}
+
+export interface WhyDownloadCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  reasons: { icon: IconName; title: string; description: string }[];
+}
+
+export interface TroubleshootingItem {
+  problem: string;
+  solution: string;
+}
+
+export interface TroubleshootingCopy {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  items: TroubleshootingItem[];
 }
 
 export interface SiteSettings {

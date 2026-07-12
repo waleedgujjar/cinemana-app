@@ -5,9 +5,15 @@ import {
   faqCopy,
   featuresCopy,
   footerCopy,
+  gameplayCopy,
   heroCopy,
   navLinks,
+  prosConsCopy,
+  requirementsCopy,
   siteConfig,
+  troubleshootingCopy,
+  whatsNewCopy,
+  whyDownloadCopy,
 } from "@/lib/site-config";
 import type { FaqItem, SiteSettings } from "@/lib/content-types";
 
@@ -68,3 +74,55 @@ export const fallbackFaqItems: FaqItem[] = faqCopy.items.map((item) => ({
   question: item.question,
   answer: item.answer,
 }));
+
+export const fallbackGameplayCopy = {
+  id: gameplayCopy.id,
+  kicker: gameplayCopy.kicker,
+  title: gameplayCopy.title,
+  description: gameplayCopy.description,
+  steps: gameplayCopy.steps.map((s) => ({ ...s })),
+};
+
+export const fallbackRequirementsCopy = {
+  id: requirementsCopy.id,
+  kicker: requirementsCopy.kicker,
+  title: requirementsCopy.title,
+  description: requirementsCopy.description,
+  minimum: requirementsCopy.minimum.map((i) => ({ ...i })),
+  recommended: requirementsCopy.recommended.map((i) => ({ ...i })),
+  note: requirementsCopy.note,
+};
+
+export const fallbackWhatsNewCopy = {
+  id: whatsNewCopy.id,
+  kicker: whatsNewCopy.kicker,
+  title: whatsNewCopy.title,
+  description: whatsNewCopy.description,
+  highlights: [...whatsNewCopy.highlights],
+  versionNote: whatsNewCopy.versionNote,
+};
+
+export const fallbackProsConsCopy = {
+  id: prosConsCopy.id,
+  kicker: prosConsCopy.kicker,
+  title: prosConsCopy.title,
+  description: prosConsCopy.description,
+  pros: [...prosConsCopy.pros],
+  cons: [...prosConsCopy.cons],
+};
+
+export const fallbackWhyDownloadCopy = {
+  id: whyDownloadCopy.id,
+  kicker: whyDownloadCopy.kicker,
+  title: whyDownloadCopy.title,
+  description: whyDownloadCopy.description,
+  reasons: whyDownloadCopy.reasons.map((r) => ({ ...r })),
+};
+
+export const fallbackTroubleshootingCopy = {
+  id: troubleshootingCopy.id,
+  kicker: troubleshootingCopy.kicker,
+  title: troubleshootingCopy.title,
+  description: troubleshootingCopy.description,
+  items: troubleshootingCopy.items.map((i) => ({ ...i })),
+};

@@ -5,7 +5,13 @@ import { Conclusion } from "@/components/sections/conclusion";
 import { DownloadGuides } from "@/components/sections/download-guides";
 import { Faq } from "@/components/sections/faq";
 import { Features } from "@/components/sections/features";
+import { Gameplay } from "@/components/sections/gameplay";
 import { Hero } from "@/components/sections/hero";
+import { ProsCons } from "@/components/sections/pros-cons";
+import { Requirements } from "@/components/sections/requirements";
+import { Troubleshooting } from "@/components/sections/troubleshooting";
+import { WhatsNew } from "@/components/sections/whats-new";
+import { WhyDownload } from "@/components/sections/why-download";
 import {
   faqPageSchema,
   JsonLd,
@@ -62,7 +68,13 @@ export default async function Home() {
             copy={settings.aboutCopy}
             siteConfig={settings.siteConfig}
           />
+          <Gameplay />
           <Features copy={settings.featuresCopy} />
+          <Requirements />
+          <WhatsNew />
+          <ProsCons />
+          <WhyDownload />
+          <Troubleshooting />
           <Faq copy={settings.faqCopy} items={faqItems} />
           <Conclusion
             copy={settings.conclusionCopy}
