@@ -2,13 +2,21 @@ import { Check, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { DownloadButton } from "@/components/ui/download-button";
 import { SectionHeader } from "@/components/ui/section-header";
-import { fallbackSiteSettings, fallbackWhatsNewCopy } from "@/lib/wordpress/fallbacks";
+import type { SiteConfigData } from "@/lib/content-types";
+import {
+  fallbackSiteSettings,
+  fallbackWhatsNewCopy,
+} from "@/lib/wordpress/fallbacks";
 
 interface WhatsNewProps {
   copy?: typeof fallbackWhatsNewCopy;
+  siteConfig?: SiteConfigData;
 }
 
-export function WhatsNew({ copy = fallbackWhatsNewCopy }: WhatsNewProps) {
+export function WhatsNew({
+  copy = fallbackWhatsNewCopy,
+  siteConfig = fallbackSiteSettings.siteConfig,
+}: WhatsNewProps) {
   return (
     <section
       id={copy.id}
@@ -28,8 +36,8 @@ export function WhatsNew({ copy = fallbackWhatsNewCopy }: WhatsNewProps) {
               {copy.versionNote}
             </p>
             <div className="mt-8">
-              <DownloadButton size="lg" fileUrl={fallbackSiteSettings.siteConfig.downloadFile}>
-                Unduh Versi {fallbackSiteSettings.siteConfig.version}
+              <DownloadButton size="lg" fileUrl={siteConfig.downloadFile}>
+                Unduh Versi {siteConfig.version}
               </DownloadButton>
             </div>
           </Reveal>
@@ -39,7 +47,7 @@ export function WhatsNew({ copy = fallbackWhatsNewCopy }: WhatsNewProps) {
               <div className="mb-6 flex items-center gap-2">
                 <Sparkles className="size-5 text-primary" aria-hidden="true" />
                 <span className="text-sm font-medium text-primary-hover">
-                  {fallbackSiteSettings.siteConfig.version}
+                  {siteConfig.version}
                 </span>
               </div>
               <ul className="space-y-4">

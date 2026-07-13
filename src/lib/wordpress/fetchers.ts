@@ -11,21 +11,36 @@ import type {
   WpTag,
 } from "@/lib/content-types";
 import {
+  getErrorMessage,
+  isSeoGraphQLError,
+  type WpFetchStatus,
+} from "@/lib/wordpress/errors";
+import {
   ADJACENT_POSTS_QUERY,
+  ADJACENT_POSTS_QUERY_BASE,
   CATEGORIES_QUERY,
   FAQS_QUERY,
   POST_BY_SLUG_QUERY,
+  POST_BY_SLUG_QUERY_BASE,
   POST_SLUGS_QUERY,
   POSTS_BY_CATEGORY_QUERY,
+  POSTS_BY_CATEGORY_QUERY_BASE,
   POSTS_BY_TAG_QUERY,
+  POSTS_BY_TAG_QUERY_BASE,
   POSTS_QUERY,
+  POSTS_QUERY_BASE,
   RELATED_POSTS_QUERY,
+  RELATED_POSTS_QUERY_BASE,
   RSS_POSTS_QUERY,
   SITE_SETTINGS_QUERY,
   SITEMAP_POSTS_QUERY,
   TAGS_QUERY,
 } from "@/lib/wordpress/queries";
-import { CACHE_TAGS, executeQuery } from "@/lib/wordpress/graphql";
+import {
+  CACHE_TAGS,
+  executeQuery,
+  type ExecuteQueryOptions,
+} from "@/lib/wordpress/graphql";
 import {
   fallbackFaqItems,
   fallbackSiteSettings,
@@ -43,6 +58,37 @@ import {
 async function isPreviewMode(): Promise<boolean> {
   const { isEnabled } = await draftMode();
   return isEnabled;
+}
+
+async function executeWithSeoFallback<T>(
+  queryWithSeo: string,
+  queryBase: string,
+  variables?: Record<string, unknown>,
+  options: ExecuteQueryOptions = {}
+): Promise<T> {
+  try {
+    return await executeQuery<T>(queryWithSeo, variables, options);
+  } catch (error) {
+    if (isSeoGraphQLError(error)) {
+      console.warn(
+        "[wordpress] SEO fields unavailable — falling back to base post query"
+      );
+      return executeQuery<T>(queryBase, variables, options);
+    }
+    throw error;
+  }
+}
+
+function withFetchStatus(
+  result: WpPostsResult,
+  status: WpFetchStatus,
+  message?: string
+): WpPostsResult {
+  return {
+    ...result,
+    fetchStatus: status,
+    fetchMessage: message,
+  };
 }
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
@@ -91,37 +137,48 @@ const emptyPostsResult: WpPostsResult = {
   total: 0,
 };
 
-export async function getPosts(options: {
-  first?: number;
-  after?: string | null;
-  search?: string;
-} = {}): Promise<WpPostsResult> {
+export async function getPosts(
+  options: {
+    first?: number;
+    after?: string | null;
+    search?: string;
+  } = {}
+): Promise<WpPostsResult> {
   if (!isWordPressConfigured()) {
     console.warn(
-      "[wordpress] getPosts: WORDPRESS_GRAPHQL_URL is not configured — returning empty list"
+      "[wordpress] getPosts: WORDPRESS_GRAPHQL_URL is not configured"
     );
-    return emptyPostsResult;
+    return withFetchStatus(
+      emptyPostsResult,
+      "not_configured",
+      "WORDPRESS_GRAPHQL_URL is not set in environment"
+    );
   }
 
   const { first = 10, after = null, search } = options;
   const preview = await isPreviewMode();
+  const variables = { first, after, search: search || null };
 
   try {
-    const data = await executeQuery<{
+    const data = await executeWithSeoFallback<{
       posts: {
         pageInfo: WpPostsResult["pageInfo"];
         nodes: Parameters<typeof mapWpPost>[0][];
       };
-    }>(
-      POSTS_QUERY,
-      { first, after, search: search || null },
-      { tags: [CACHE_TAGS.posts], preview }
-    );
+    }>(POSTS_QUERY, POSTS_QUERY_BASE, variables, {
+      tags: [CACHE_TAGS.posts],
+      preview,
+    });
 
-    return mapPostsResult(data);
+    const result = mapPostsResult(data);
+    return withFetchStatus(
+      result,
+      result.posts.length > 0 ? "ok" : "empty"
+    );
   } catch (error) {
-    console.error("[wordpress] getPosts failed:", error);
-    return emptyPostsResult;
+    const message = getErrorMessage(error);
+    console.error("[wordpress] getPosts failed:", message);
+    return withFetchStatus(emptyPostsResult, "graphql_error", message);
   }
 }
 
@@ -136,10 +193,11 @@ export async function getPostBySlug(slug: string): Promise<WpPost | null> {
   const preview = await isPreviewMode();
 
   try {
-    const data = await executeQuery<{
+    const data = await executeWithSeoFallback<{
       post: Parameters<typeof mapWpPost>[0] | null;
     }>(
       POST_BY_SLUG_QUERY,
+      POST_BY_SLUG_QUERY_BASE,
       { slug },
       { tags: [CACHE_TAGS.posts, CACHE_TAGS.post(slug)], preview }
     );
@@ -192,38 +250,33 @@ export async function getPostsByCategory(
   options: { first?: number; after?: string | null } = {}
 ): Promise<{ result: WpPostsResult; category: WpCategory | null }> {
   if (!isWordPressConfigured()) {
-    return {
-      result: {
-        posts: [],
-        pageInfo: {
-          hasNextPage: false,
-          hasPreviousPage: false,
-          startCursor: null,
-          endCursor: null,
-        },
-        total: 0,
-      },
-      category: null,
-    };
+    return { result: emptyPostsResult, category: null };
   }
 
   const { first = 10, after = null } = options;
-  const data = await executeQuery<{
-    posts: {
-      pageInfo: WpPostsResult["pageInfo"];
-      nodes: Parameters<typeof mapWpPost>[0][];
-    };
-    category: Parameters<typeof mapCategory>[0];
-  }>(
-    POSTS_BY_CATEGORY_QUERY,
-    { slug: [slug], first, after },
-    { tags: [CACHE_TAGS.posts, CACHE_TAGS.categories] }
-  );
 
-  return {
-    result: mapPostsResult(data),
-    category: mapCategory(data.category),
-  };
+  try {
+    const data = await executeWithSeoFallback<{
+      posts: {
+        pageInfo: WpPostsResult["pageInfo"];
+        nodes: Parameters<typeof mapWpPost>[0][];
+      };
+      category: Parameters<typeof mapCategory>[0];
+    }>(
+      POSTS_BY_CATEGORY_QUERY,
+      POSTS_BY_CATEGORY_QUERY_BASE,
+      { categoryNames: [slug], categorySlug: slug, first, after },
+      { tags: [CACHE_TAGS.posts, CACHE_TAGS.categories] }
+    );
+
+    return {
+      result: mapPostsResult(data),
+      category: mapCategory(data.category),
+    };
+  } catch (error) {
+    console.error(`[wordpress] getPostsByCategory(${slug}) failed:`, error);
+    return { result: emptyPostsResult, category: null };
+  }
 }
 
 export async function getPostsByTag(
@@ -231,38 +284,33 @@ export async function getPostsByTag(
   options: { first?: number; after?: string | null } = {}
 ): Promise<{ result: WpPostsResult; tag: WpTag | null }> {
   if (!isWordPressConfigured()) {
-    return {
-      result: {
-        posts: [],
-        pageInfo: {
-          hasNextPage: false,
-          hasPreviousPage: false,
-          startCursor: null,
-          endCursor: null,
-        },
-        total: 0,
-      },
-      tag: null,
-    };
+    return { result: emptyPostsResult, tag: null };
   }
 
   const { first = 10, after = null } = options;
-  const data = await executeQuery<{
-    posts: {
-      pageInfo: WpPostsResult["pageInfo"];
-      nodes: Parameters<typeof mapWpPost>[0][];
-    };
-    tag: Parameters<typeof mapTag>[0];
-  }>(
-    POSTS_BY_TAG_QUERY,
-    { slug: [slug], first, after },
-    { tags: [CACHE_TAGS.posts, CACHE_TAGS.tags] }
-  );
 
-  return {
-    result: mapPostsResult(data),
-    tag: mapTag(data.tag),
-  };
+  try {
+    const data = await executeWithSeoFallback<{
+      posts: {
+        pageInfo: WpPostsResult["pageInfo"];
+        nodes: Parameters<typeof mapWpPost>[0][];
+      };
+      tag: Parameters<typeof mapTag>[0];
+    }>(
+      POSTS_BY_TAG_QUERY,
+      POSTS_BY_TAG_QUERY_BASE,
+      { tagSlugs: [slug], tagSlug: slug, first, after },
+      { tags: [CACHE_TAGS.posts, CACHE_TAGS.tags] }
+    );
+
+    return {
+      result: mapPostsResult(data),
+      tag: mapTag(data.tag),
+    };
+  } catch (error) {
+    console.error(`[wordpress] getPostsByTag(${slug}) failed:`, error);
+    return { result: emptyPostsResult, tag: null };
+  }
 }
 
 export async function searchPosts(
@@ -285,10 +333,11 @@ export async function getRelatedPosts(
   if (!categoryIds.length) return [];
 
   try {
-    const data = await executeQuery<{
+    const data = await executeWithSeoFallback<{
       posts: { nodes: Parameters<typeof mapWpPost>[0][] };
     }>(
       RELATED_POSTS_QUERY,
+      RELATED_POSTS_QUERY_BASE,
       {
         categoryIn: categoryIds,
         notIn: [post.databaseId],
@@ -298,7 +347,8 @@ export async function getRelatedPosts(
     );
 
     return data.posts.nodes.map(mapWpPost);
-  } catch {
+  } catch (error) {
+    console.error("[wordpress] getRelatedPosts failed:", error);
     return [];
   }
 }
@@ -309,11 +359,12 @@ export async function getAdjacentPosts(post: WpPost): Promise<AdjacentPosts> {
   }
 
   try {
-    const data = await executeQuery<{
+    const data = await executeWithSeoFallback<{
       previous: { nodes: Parameters<typeof mapWpPost>[0][] };
       next: { nodes: Parameters<typeof mapWpPost>[0][] };
     }>(
       ADJACENT_POSTS_QUERY,
+      ADJACENT_POSTS_QUERY_BASE,
       { date: post.date },
       { tags: [CACHE_TAGS.posts] }
     );
@@ -324,7 +375,8 @@ export async function getAdjacentPosts(post: WpPost): Promise<AdjacentPosts> {
         : null,
       next: data.next.nodes[0] ? mapWpPost(data.next.nodes[0]) : null,
     };
-  } catch {
+  } catch (error) {
+    console.error("[wordpress] getAdjacentPosts failed:", error);
     return { previous: null, next: null };
   }
 }
@@ -332,23 +384,33 @@ export async function getAdjacentPosts(post: WpPost): Promise<AdjacentPosts> {
 export async function getCategories(): Promise<WpCategory[]> {
   if (!isWordPressConfigured()) return [];
 
-  const data = await executeQuery<{
-    categories: { nodes: Parameters<typeof mapCategory>[0][] };
-  }>(CATEGORIES_QUERY, undefined, { tags: [CACHE_TAGS.categories] });
+  try {
+    const data = await executeQuery<{
+      categories: { nodes: Parameters<typeof mapCategory>[0][] };
+    }>(CATEGORIES_QUERY, undefined, { tags: [CACHE_TAGS.categories] });
 
-  return data.categories.nodes
-    .map(mapCategory)
-    .filter((c): c is WpCategory => c !== null);
+    return data.categories.nodes
+      .map(mapCategory)
+      .filter((c): c is WpCategory => c !== null);
+  } catch (error) {
+    console.error("[wordpress] getCategories failed:", error);
+    return [];
+  }
 }
 
 export async function getTags(): Promise<WpTag[]> {
   if (!isWordPressConfigured()) return [];
 
-  const data = await executeQuery<{
-    tags: { nodes: Parameters<typeof mapTag>[0][] };
-  }>(TAGS_QUERY, undefined, { tags: [CACHE_TAGS.tags] });
+  try {
+    const data = await executeQuery<{
+      tags: { nodes: Parameters<typeof mapTag>[0][] };
+    }>(TAGS_QUERY, undefined, { tags: [CACHE_TAGS.tags] });
 
-  return data.tags.nodes.map(mapTag).filter((t): t is WpTag => t !== null);
+    return data.tags.nodes.map(mapTag).filter((t): t is WpTag => t !== null);
+  } catch (error) {
+    console.error("[wordpress] getTags failed:", error);
+    return [];
+  }
 }
 
 export async function getSitemapData(): Promise<{

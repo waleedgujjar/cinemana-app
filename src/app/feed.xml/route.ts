@@ -11,14 +11,29 @@ function escapeXml(text: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export async function GET() {
-  const settings = await getSiteSettings();
-  const { siteConfig } = settings;
-  const posts = await getRssPosts();
+function emptyRssFeed(siteUrl: string, siteName: string, description: string) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${escapeXml(siteName)} Blog</title>
+    <link>${siteUrl}/blog</link>
+    <description>${escapeXml(description)}</description>
+    <language>id</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+  </channel>
+</rss>`;
+}
 
-  const items = posts
-    .map(
-      (post) => `
+export async function GET() {
+  try {
+    const settings = await getSiteSettings();
+    const { siteConfig } = settings;
+    const posts = await getRssPosts();
+
+    const items = posts
+      .map(
+        (post) => `
     <item>
       <title>${escapeXml(post.title)}</title>
       <link>${siteConfig.url}/blog/${post.slug}</link>
@@ -27,10 +42,10 @@ export async function GET() {
       <author>${escapeXml(post.author)}</author>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
     </item>`
-    )
-    .join("");
+      )
+      .join("");
 
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+    const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(siteConfig.name)} Blog</title>
@@ -43,10 +58,26 @@ export async function GET() {
   </channel>
 </rss>`;
 
-  return new Response(rss, {
-    headers: {
-      "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
-    },
-  });
+    return new Response(rss, {
+      headers: {
+        "Content-Type": "application/rss+xml; charset=utf-8",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
+  } catch (error) {
+    console.error("[feed.xml] Failed to generate RSS:", error);
+    const fallbackUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ?? "https://sakuraschoolsimulator.net";
+    const body = emptyRssFeed(
+      fallbackUrl,
+      "Sakura School Simulator",
+      "Blog feed temporarily unavailable"
+    );
+    return new Response(body, {
+      headers: {
+        "Content-Type": "application/rss+xml; charset=utf-8",
+        "Cache-Control": "public, s-maxage=300",
+      },
+    });
+  }
 }

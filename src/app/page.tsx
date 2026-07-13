@@ -22,6 +22,7 @@ import {
 } from "@/lib/schema";
 import { getFaqs, getSiteSettings } from "@/lib/wordpress";
 
+/** Matches WORDPRESS_REVALIDATE_SECONDS — must be literal for Next.js segment config */
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -71,7 +72,7 @@ export default async function Home() {
           <Gameplay />
           <Features copy={settings.featuresCopy} />
           <Requirements />
-          <WhatsNew />
+          <WhatsNew siteConfig={settings.siteConfig} />
           <ProsCons />
           <WhyDownload />
           <Troubleshooting />

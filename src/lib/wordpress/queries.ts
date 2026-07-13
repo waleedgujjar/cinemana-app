@@ -23,8 +23,8 @@ export const SEO_FRAGMENT = `
   }
 `;
 
-export const POST_CARD_FRAGMENT = `
-  fragment PostCardFields on Post {
+export const POST_CARD_BASE_FRAGMENT = `
+  fragment PostCardBaseFields on Post {
     id
     databaseId
     title
@@ -56,12 +56,27 @@ export const POST_CARD_FRAGMENT = `
         slug
       }
     }
+  }
+  ${MEDIA_FRAGMENT}
+`;
+
+export const POST_CARD_FRAGMENT = `
+  fragment PostCardFields on Post {
+    ...PostCardBaseFields
     seo {
       ...SeoFields
     }
   }
-  ${MEDIA_FRAGMENT}
+  ${POST_CARD_BASE_FRAGMENT}
   ${SEO_FRAGMENT}
+`;
+
+export const POST_DETAIL_BASE_FRAGMENT = `
+  fragment PostDetailBaseFields on Post {
+    ...PostCardBaseFields
+    content
+  }
+  ${POST_CARD_BASE_FRAGMENT}
 `;
 
 export const POST_DETAIL_FRAGMENT = `
@@ -215,6 +230,27 @@ export const POSTS_QUERY = `
   ${POST_CARD_FRAGMENT}
 `;
 
+export const POSTS_QUERY_BASE = `
+  query PostsBase($first: Int = 10, $after: String, $search: String) {
+    posts(
+      first: $first
+      after: $after
+      where: { status: PUBLISH, search: $search, orderby: { field: DATE, order: DESC } }
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+  }
+  ${POST_CARD_BASE_FRAGMENT}
+`;
+
 export const POST_BY_SLUG_QUERY = `
   query PostBySlug($slug: ID!) {
     post(id: $slug, idType: SLUG) {
@@ -222,6 +258,15 @@ export const POST_BY_SLUG_QUERY = `
     }
   }
   ${POST_DETAIL_FRAGMENT}
+`;
+
+export const POST_BY_SLUG_QUERY_BASE = `
+  query PostBySlugBase($slug: ID!) {
+    post(id: $slug, idType: SLUG) {
+      ...PostDetailBaseFields
+    }
+  }
+  ${POST_DETAIL_BASE_FRAGMENT}
 `;
 
 export const POST_SLUGS_QUERY = `
@@ -240,11 +285,20 @@ export const POST_SLUGS_QUERY = `
 `;
 
 export const POSTS_BY_CATEGORY_QUERY = `
-  query PostsByCategory($slug: [String], $first: Int = 10, $after: String) {
+  query PostsByCategory(
+    $categoryNames: [String]
+    $categorySlug: ID!
+    $first: Int = 10
+    $after: String
+  ) {
     posts(
       first: $first
       after: $after
-      where: { categoryName: $slug, status: PUBLISH, orderby: { field: DATE, order: DESC } }
+      where: {
+        categoryName: $categoryNames
+        status: PUBLISH
+        orderby: { field: DATE, order: DESC }
+      }
     ) {
       pageInfo {
         hasNextPage
@@ -256,7 +310,7 @@ export const POSTS_BY_CATEGORY_QUERY = `
         ...PostCardFields
       }
     }
-    category(id: $slug, idType: SLUG) {
+    category(id: $categorySlug, idType: SLUG) {
       name
       slug
       description
@@ -266,12 +320,57 @@ export const POSTS_BY_CATEGORY_QUERY = `
   ${POST_CARD_FRAGMENT}
 `;
 
-export const POSTS_BY_TAG_QUERY = `
-  query PostsByTag($slug: [String], $first: Int = 10, $after: String) {
+export const POSTS_BY_CATEGORY_QUERY_BASE = `
+  query PostsByCategoryBase(
+    $categoryNames: [String]
+    $categorySlug: ID!
+    $first: Int = 10
+    $after: String
+  ) {
     posts(
       first: $first
       after: $after
-      where: { tag: $slug, status: PUBLISH, orderby: { field: DATE, order: DESC } }
+      where: {
+        categoryName: $categoryNames
+        status: PUBLISH
+        orderby: { field: DATE, order: DESC }
+      }
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+    category(id: $categorySlug, idType: SLUG) {
+      name
+      slug
+      description
+      count
+    }
+  }
+  ${POST_CARD_BASE_FRAGMENT}
+`;
+
+export const POSTS_BY_TAG_QUERY = `
+  query PostsByTag(
+    $tagSlugs: [String]
+    $tagSlug: ID!
+    $first: Int = 10
+    $after: String
+  ) {
+    posts(
+      first: $first
+      after: $after
+      where: {
+        tag: $tagSlugs
+        status: PUBLISH
+        orderby: { field: DATE, order: DESC }
+      }
     ) {
       pageInfo {
         hasNextPage
@@ -283,13 +382,48 @@ export const POSTS_BY_TAG_QUERY = `
         ...PostCardFields
       }
     }
-    tag(id: $slug, idType: SLUG) {
+    tag(id: $tagSlug, idType: SLUG) {
       name
       slug
       count
     }
   }
   ${POST_CARD_FRAGMENT}
+`;
+
+export const POSTS_BY_TAG_QUERY_BASE = `
+  query PostsByTagBase(
+    $tagSlugs: [String]
+    $tagSlug: ID!
+    $first: Int = 10
+    $after: String
+  ) {
+    posts(
+      first: $first
+      after: $after
+      where: {
+        tag: $tagSlugs
+        status: PUBLISH
+        orderby: { field: DATE, order: DESC }
+      }
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+    tag(id: $tagSlug, idType: SLUG) {
+      name
+      slug
+      count
+    }
+  }
+  ${POST_CARD_BASE_FRAGMENT}
 `;
 
 export const RELATED_POSTS_QUERY = `
@@ -309,6 +443,25 @@ export const RELATED_POSTS_QUERY = `
     }
   }
   ${POST_CARD_FRAGMENT}
+`;
+
+export const RELATED_POSTS_QUERY_BASE = `
+  query RelatedPostsBase($categoryIn: [ID], $notIn: [ID], $first: Int = 3) {
+    posts(
+      first: $first
+      where: {
+        categoryIn: $categoryIn
+        notIn: $notIn
+        status: PUBLISH
+        orderby: { field: DATE, order: DESC }
+      }
+    ) {
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+  }
+  ${POST_CARD_BASE_FRAGMENT}
 `;
 
 export const ADJACENT_POSTS_QUERY = `
@@ -331,6 +484,28 @@ export const ADJACENT_POSTS_QUERY = `
     }
   }
   ${POST_CARD_FRAGMENT}
+`;
+
+export const ADJACENT_POSTS_QUERY_BASE = `
+  query AdjacentPostsBase($date: String!) {
+    previous: posts(
+      first: 1
+      where: { status: PUBLISH, dateQuery: { before: $date }, orderby: { field: DATE, order: DESC } }
+    ) {
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+    next: posts(
+      first: 1
+      where: { status: PUBLISH, dateQuery: { after: $date }, orderby: { field: DATE, order: ASC } }
+    ) {
+      nodes {
+        ...PostCardBaseFields
+      }
+    }
+  }
+  ${POST_CARD_BASE_FRAGMENT}
 `;
 
 export const CATEGORIES_QUERY = `
@@ -398,6 +573,21 @@ export const RSS_POSTS_QUERY = `
           node {
             name
           }
+        }
+      }
+    }
+  }
+`;
+
+/** Deploy health check — includes seo field to verify add-wpgraphql-seo is active */
+export const DEPLOY_HEALTH_QUERY = `
+  query DeployHealth {
+    posts(first: 1, where: { status: PUBLISH }) {
+      nodes {
+        slug
+        title
+        seo {
+          title
         }
       }
     }

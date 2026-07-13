@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { getSiteSettings } from "@/lib/wordpress";
-import { siteConfig as fallbackSiteConfig } from "@/lib/site-config";
 import "./globals.css";
 
 const heading = Geist({
@@ -90,18 +89,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const feedUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? fallbackSiteConfig.url}/feed.xml`;
-
   return (
     <html lang="id" suppressHydrationWarning className={`${heading.variable} ${body.variable}`}>
-      <head>
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="RSS Feed"
-          href={feedUrl}
-        />
-      </head>
       <body className="antialiased">
         <ThemeProvider>
           <a

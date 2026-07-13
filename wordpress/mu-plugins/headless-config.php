@@ -125,11 +125,10 @@ function headless_trigger_revalidation(string $post_type = '', string $post_slug
         return;
     }
 
-    $tags = ['site-settings', 'posts', 'faqs'];
+    $tags = ['site-settings', 'posts', 'faqs', 'categories', 'tags'];
     $paths = ['/', '/blog', '/sitemap.xml', '/feed.xml'];
 
     if ($post_type === 'post') {
-        $tags[] = 'posts';
         if ($post_slug !== '') {
             $paths[] = '/blog/' . $post_slug;
             $tags[] = 'post-' . $post_slug;
@@ -167,3 +166,52 @@ function headless_on_acf_save(): void {
     headless_trigger_revalidation('acf_options');
 }
 add_action('acf/save_post', 'headless_on_acf_save');
+
+/**
+ * Revalidate category/tag archives when taxonomy terms change.
+ */
+function headless_on_edited_term(int $term_id, int $tt_id, string $taxonomy): void {
+    if (!in_array($taxonomy, ['category', 'post_tag'], true)) {
+        return;
+    }
+
+    $term = get_term($term_id, $taxonomy);
+    if (!$term || is_wp_error($term)) {
+        return;
+    }
+
+    $frontend_url = defined('HEADLESS_FRONTEND_URL')
+        ? HEADLESS_FRONTEND_URL
+        : getenv('HEADLESS_FRONTEND_URL');
+    $secret = defined('HEADLESS_REVALIDATION_SECRET')
+        ? HEADLESS_REVALIDATION_SECRET
+        : getenv('HEADLESS_REVALIDATION_SECRET');
+
+    if (!$frontend_url || !$secret) {
+        return;
+    }
+
+    $paths = ['/blog', '/sitemap.xml'];
+    $tags = ['posts', 'categories', 'tags'];
+
+    if ($taxonomy === 'category') {
+        $paths[] = '/blog/category/' . $term->slug;
+        $tags[] = 'categories';
+    } else {
+        $paths[] = '/blog/tag/' . $term->slug;
+        $tags[] = 'tags';
+    }
+
+    wp_remote_post(
+        rtrim($frontend_url, '/') . '/api/revalidate?secret=' . rawurlencode($secret),
+        [
+            'timeout' => 10,
+            'headers' => ['Content-Type' => 'application/json'],
+            'body' => wp_json_encode([
+                'paths' => array_values(array_unique($paths)),
+                'tags' => array_values(array_unique($tags)),
+            ]),
+        ]
+    );
+}
+add_action('edited_term', 'headless_on_edited_term', 10, 3);

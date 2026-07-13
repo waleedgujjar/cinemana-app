@@ -7,7 +7,6 @@ const envSchema = z.object({
   WORDPRESS_AUTH_TOKEN: z.string().optional(),
   WORDPRESS_PREVIEW_SECRET: z.string().optional(),
   REVALIDATION_SECRET: z.string().optional(),
-  WORDPRESS_WEBHOOK_SECRET: z.string().optional(),
   WORDPRESS_REVALIDATE_SECONDS: z.coerce.number().positive().default(3600),
 });
 
@@ -18,7 +17,6 @@ export const env = envSchema.parse({
   WORDPRESS_AUTH_TOKEN: process.env.WORDPRESS_AUTH_TOKEN,
   WORDPRESS_PREVIEW_SECRET: process.env.WORDPRESS_PREVIEW_SECRET,
   REVALIDATION_SECRET: process.env.REVALIDATION_SECRET,
-  WORDPRESS_WEBHOOK_SECRET: process.env.WORDPRESS_WEBHOOK_SECRET,
   WORDPRESS_REVALIDATE_SECONDS: process.env.WORDPRESS_REVALIDATE_SECONDS,
 });
 

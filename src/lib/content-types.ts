@@ -246,6 +246,8 @@ export interface WpPostsResult {
     endCursor: string | null;
   };
   total: number;
+  fetchStatus?: "ok" | "not_configured" | "graphql_error" | "empty";
+  fetchMessage?: string;
 }
 
 export interface WpCategory extends WpTerm {

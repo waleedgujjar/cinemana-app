@@ -42,6 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# APK binaries — keep stable placeholder in git; upload real file on VPS
+# APK binaries — upload real file on VPS (see public/downloads/README.md)
 public/downloads/SAKURA_*.apk
 public/downloads/cinemana-shabakaty.apk
+public/downloads/sakura-school-simulator.apk

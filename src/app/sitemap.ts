@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { getBaseUrl } from "@/lib/wordpress/mappers";
-import { getSitemapData, getSiteSettings } from "@/lib/wordpress";
 import { isWordPressConfigured } from "@/lib/env";
+import { getSitemapData, getSiteSettings } from "@/lib/wordpress";
+import { getBaseUrl } from "@/lib/wordpress/mappers";
 
 export const revalidate = 3600;
 

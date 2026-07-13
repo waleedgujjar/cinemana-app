@@ -7,6 +7,7 @@ import { PostCard } from "@/components/blog/post-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getPosts, getSiteSettings } from "@/lib/wordpress";
 
+/** Matches WORDPRESS_REVALIDATE_SECONDS */
 export const revalidate = 3600;
 
 const POSTS_PER_PAGE = 9;
@@ -24,9 +25,50 @@ interface BlogPageProps {
   searchParams: Promise<{ after?: string; before?: string }>;
 }
 
+function BlogEmptyMessage({
+  fetchStatus,
+  fetchMessage,
+}: {
+  fetchStatus?: string;
+  fetchMessage?: string;
+}) {
+  if (fetchStatus === "not_configured") {
+    return (
+      <p className="mt-12 text-center text-muted-foreground">
+        Blog belum dikonfigurasi. Set{" "}
+        <code className="text-sm">WORDPRESS_GRAPHQL_URL</code> di server lalu
+        build ulang.
+      </p>
+    );
+  }
+
+  if (fetchStatus === "graphql_error") {
+    return (
+      <div className="mt-12 text-center">
+        <p className="text-muted-foreground">
+          Gagal memuat artikel dari WordPress CMS.
+        </p>
+        {fetchMessage && (
+          <p className="mt-2 text-sm text-destructive/80">{fetchMessage}</p>
+        )}
+        <p className="mt-4 text-sm text-muted-foreground">
+          Periksa SSL CMS, plugin WPGraphQL, dan koneksi GraphQL di server.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <p className="mt-12 text-center text-muted-foreground">
+      Belum ada artikel. Tambahkan postingan berstatus{" "}
+      <strong>Published</strong> di WordPress admin.
+    </p>
+  );
+}
+
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const params = await searchParams;
-  const { posts, pageInfo } = await getPosts({
+  const { posts, pageInfo, fetchStatus, fetchMessage } = await getPosts({
     first: POSTS_PER_PAGE,
     after: params.after ?? null,
   });
@@ -64,9 +106,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             ))}
           </div>
         ) : (
-          <p className="mt-12 text-center text-muted-foreground">
-            Belum ada artikel. Tambahkan postingan di WordPress admin.
-          </p>
+          <BlogEmptyMessage
+            fetchStatus={fetchStatus}
+            fetchMessage={fetchMessage}
+          />
         )}
 
         <Pagination

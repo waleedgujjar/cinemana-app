@@ -1,3 +1,4 @@
+import { APK_FILENAME } from "@/lib/download-config";
 import type {
   AboutCopy,
   ConclusionCopy,
@@ -251,7 +252,7 @@ export function mapSiteSettings(
     mainKeyword: meta?.mainKeyword ?? fb.siteConfig.mainKeyword,
     downloadFile: meta?.downloadFileUrl ?? fb.siteConfig.downloadFile,
     downloadFileName: meta?.downloadFileName ?? fb.siteConfig.downloadFileName,
-    downloadSaveName: fb.siteConfig.downloadSaveName,
+    downloadSaveName: fb.siteConfig.downloadSaveName ?? APK_FILENAME,
     downloadFileSizeLabel: fb.siteConfig.downloadFileSizeLabel,
   };
 

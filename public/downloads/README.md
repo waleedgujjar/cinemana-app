@@ -1,17 +1,21 @@
 # APK downloads
 
-Stable public URL (do not change when releasing a new version):
+Public download URL:
 
-- **URL:** `/downloads/sakura-school-simulator.apk`
-- **Version:** see `src/lib/site-config.ts` (`version`, `downloadFileSizeLabel`)
+- **URL:** `/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk`
+- **Constant:** `APK_DOWNLOAD_PATH` in `src/lib/download-config.ts`
+- **Version / size:** `src/lib/site-config.ts`
 
-## Release workflow
+## VPS deployment
 
-1. Place the new APK in `public/downloads/` (any filename).
-2. Run deploy — `scripts/deploy-vps.sh` copies the newest `SAKURA_*.apk` or `sakura-school-simulator.apk` to the stable name.
-3. Update `version` and `downloadFileSizeLabel` in `src/lib/site-config.ts`.
-4. Optional: set WordPress ACF `downloadFileUrl` to `/downloads/sakura-school-simulator.apk`.
+The real APK (~254 MB) cannot be stored in GitHub. Upload it to the VPS at the exact path above before running `bash scripts/deploy-vps.sh`.
 
-## Alternative API route
+```bash
+# From local machine
+scp public/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk \
+  user@vps:/home/sakuraschoolsimulator/htdocs/sakuraschoolsimulator.net/public/downloads/
+```
 
-`/api/download` streams the same file with `Content-Disposition: attachment`. Set `downloadFile: "/api/download"` in site config if Nginx MIME rules are unavailable.
+## WordPress ACF (optional override)
+
+Set `downloadFileUrl` to `/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk` in CMS site settings.

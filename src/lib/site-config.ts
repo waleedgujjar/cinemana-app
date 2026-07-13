@@ -1,3 +1,5 @@
+import { APK_DOWNLOAD_PATH, APK_FILENAME } from "@/lib/download-config";
+
 export const siteConfig = {
   name: "Sakura School Simulator",
   shortName: "Sakura School",
@@ -7,9 +9,9 @@ export const siteConfig = {
     "Unduh Sakura School Simulator APK gratis untuk Android. Jelajahi dunia sekolah terbuka, kustomisasi karakter, dan petualangan seru — aman, cepat, dan tanpa registrasi.",
   locale: "id_ID",
   mainKeyword: "sakura school simulator APK",
-  downloadFile: "/downloads/sakura-school-simulator.apk",
+  downloadFile: APK_DOWNLOAD_PATH,
   downloadFileName: "Sakura School Simulator APK",
-  downloadSaveName: "sakura-school-simulator.apk",
+  downloadSaveName: APK_FILENAME,
   downloadFileSizeBytes: 265978841,
   downloadFileSizeLabel: "254 MB",
 } as const;

@@ -3,6 +3,9 @@
  * SEO baseline checks for sakuraschoolsimulator.net
  * Usage: node scripts/seo-baseline.mjs [siteUrl]
  */
+const APK_PATH =
+  "/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk";
+
 const siteUrl = (
   process.argv[2] ??
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -14,6 +17,21 @@ const checks = [];
 async function fetchText(path) {
   const res = await fetch(`${siteUrl}${path}`, { redirect: "follow" });
   return { status: res.status, text: await res.text(), url: res.url };
+}
+
+function extractJsonLd(html) {
+  const blocks = [];
+  const re =
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = re.exec(html)) !== null) {
+    try {
+      blocks.push(JSON.parse(match[1].trim()));
+    } catch {
+      /* skip */
+    }
+  }
+  return blocks;
 }
 
 async function main() {
@@ -42,6 +60,17 @@ async function main() {
       detail: canonical ?? "n/a",
     });
 
+    const graphs = extractJsonLd(home.text).flatMap((n) =>
+      Array.isArray(n["@graph"]) ? [n, ...n["@graph"]] : [n]
+    );
+    const app = graphs.find((n) => n["@type"] === "SoftwareApplication");
+    const expectedDownload = `${siteUrl}${APK_PATH}`;
+    checks.push({
+      name: "JSON-LD SoftwareApplication.downloadUrl",
+      ok: app?.downloadUrl === expectedDownload,
+      detail: app?.downloadUrl ?? "not found",
+    });
+
     const robots = await fetchText("/robots.txt");
     checks.push({
       name: "robots.txt valid",
@@ -56,11 +85,38 @@ async function main() {
       detail: `status ${sitemap.status}`,
     });
 
-    const apk = await fetchText("/downloads/sakura-school-simulator.apk");
+    const feed = await fetchText("/feed.xml");
+    checks.push({
+      name: "feed.xml valid",
+      ok: feed.status === 200 && feed.text.includes("<rss"),
+      detail: `status ${feed.status}`,
+    });
+
+    const apk = await fetchText(APK_PATH);
     checks.push({
       name: "APK download reachable",
       ok: apk.status === 200,
       detail: `status ${apk.status}`,
+    });
+
+    const blog = await fetchText("/blog");
+    const hasPosts = blog.text.includes("/blog/");
+    const hasCmsError =
+      blog.text.includes("Gagal memuat artikel") ||
+      blog.text.includes("belum dikonfigurasi");
+    checks.push({
+      name: "Blog page loads",
+      ok: blog.status === 200,
+      detail: `status ${blog.status}`,
+    });
+    checks.push({
+      name: "Blog has posts or clear status",
+      ok: hasPosts || blog.text.includes("Belum ada artikel") || hasCmsError,
+      detail: hasPosts
+        ? "posts detected"
+        : hasCmsError
+          ? "CMS error shown"
+          : "empty state",
     });
   } catch (error) {
     console.error("Fetch failed:", error.message);
@@ -74,9 +130,15 @@ async function main() {
 
   const failed = checks.filter((c) => !c.ok).length;
   console.log("Manual steps:");
-  console.log(`  PageSpeed Insights: https://pagespeed.web.dev/analysis?url=${encodeURIComponent(siteUrl)}`);
-  console.log(`  Rich Results Test:  https://search.google.com/test/rich-results?url=${encodeURIComponent(siteUrl)}`);
-  console.log(`  Google Search Console: add property → submit ${siteUrl}/sitemap.xml\n`);
+  console.log(
+    `  PageSpeed Insights: https://pagespeed.web.dev/analysis?url=${encodeURIComponent(siteUrl)}`
+  );
+  console.log(
+    `  Rich Results Test:  https://search.google.com/test/rich-results?url=${encodeURIComponent(siteUrl)}`
+  );
+  console.log(
+    `  Google Search Console: add property → submit ${siteUrl}/sitemap.xml\n`
+  );
 
   process.exit(failed > 0 ? 1 : 0);
 }
