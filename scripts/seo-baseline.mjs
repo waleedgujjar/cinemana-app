@@ -3,8 +3,8 @@
  * SEO baseline checks for sakuraschoolsimulator.net
  * Usage: node scripts/seo-baseline.mjs [siteUrl]
  */
-const APK_PATH =
-  "/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk";
+const APK_DOWNLOAD_URL =
+  "https://d.apkpure.com/b/XAPK/jp.garud.ssimulator?version=latest";
 
 const siteUrl = (
   process.argv[2] ??
@@ -64,11 +64,28 @@ async function main() {
       Array.isArray(n["@graph"]) ? [n, ...n["@graph"]] : [n]
     );
     const app = graphs.find((n) => n["@type"] === "SoftwareApplication");
-    const expectedDownload = `${siteUrl}${APK_PATH}`;
     checks.push({
       name: "JSON-LD SoftwareApplication.downloadUrl",
-      ok: app?.downloadUrl === expectedDownload,
+      ok: app?.downloadUrl === APK_DOWNLOAD_URL,
       detail: app?.downloadUrl ?? "not found",
+    });
+
+    checks.push({
+      name: "Google site verification meta tag",
+      ok: home.text.includes(
+        'name="google-site-verification" content="J-rRDIa0Cn9ZP0yl8a1lcHyP9xo8IbrNElCa8ncvFRY"'
+      ),
+      detail: home.text.includes("google-site-verification")
+        ? "present"
+        : "not found",
+    });
+
+    checks.push({
+      name: "Homepage links to APKPure download",
+      ok: home.text.includes("d.apkpure.com/b/XAPK/jp.garud.ssimulator"),
+      detail: home.text.includes("d.apkpure.com")
+        ? "APKPure URL found"
+        : "not found",
     });
 
     const robots = await fetchText("/robots.txt");
@@ -90,13 +107,6 @@ async function main() {
       name: "feed.xml valid",
       ok: feed.status === 200 && feed.text.includes("<rss"),
       detail: `status ${feed.status}`,
-    });
-
-    const apk = await fetchText(APK_PATH);
-    checks.push({
-      name: "APK download reachable",
-      ok: apk.status === 200,
-      detail: `status ${apk.status}`,
     });
 
     const blog = await fetchText("/blog");

@@ -10,9 +10,12 @@ import type {
   WpPostsResult,
   WpTag,
 } from "@/lib/content-types";
+import { isoToDateInput } from "@/lib/wordpress/date-input";
 import {
+  devWarn,
   getErrorMessage,
-  isSeoGraphQLError,
+  isSchemaMissingError,
+  isSeoRelatedError,
   type WpFetchStatus,
 } from "@/lib/wordpress/errors";
 import {
@@ -38,8 +41,10 @@ import {
 } from "@/lib/wordpress/queries";
 import {
   CACHE_TAGS,
-  executeQuery,
+  executeQuerySafe,
+  WordPressGraphQLError,
   type ExecuteQueryOptions,
+  type GraphQLResult,
 } from "@/lib/wordpress/graphql";
 import {
   fallbackFaqItems,
@@ -60,23 +65,48 @@ async function isPreviewMode(): Promise<boolean> {
   return isEnabled;
 }
 
-async function executeWithSeoFallback<T>(
+async function executePostQuery<T>(
   queryWithSeo: string,
   queryBase: string,
   variables?: Record<string, unknown>,
   options: ExecuteQueryOptions = {}
-): Promise<T> {
-  try {
-    return await executeQuery<T>(queryWithSeo, variables, options);
-  } catch (error) {
-    if (isSeoGraphQLError(error)) {
-      console.warn(
-        "[wordpress] SEO fields unavailable — falling back to base post query"
-      );
-      return executeQuery<T>(queryBase, variables, options);
-    }
-    throw error;
+): Promise<T | null> {
+  const seoResult = await executeQuerySafe<T>(queryWithSeo, variables, options);
+
+  if (seoResult.data) {
+    return seoResult.data;
   }
+
+  const shouldFallback =
+    seoResult.schemaMissing || isSeoRelatedError(seoResult.errors);
+
+  if (shouldFallback) {
+    devWarn(
+      "[wordpress] SEO fields unavailable — falling back to base post query",
+      seoResult.errors
+    );
+    const baseResult = await executeQuerySafe<T>(queryBase, variables, options);
+    if (baseResult.data) {
+      return baseResult.data;
+    }
+    if (baseResult.schemaMissing) {
+      devWarn(
+        "[wordpress] Base post query schema unavailable",
+        baseResult.errors
+      );
+      return null;
+    }
+    if (baseResult.errors) {
+      throw new WordPressGraphQLError(baseResult.errors.join(", "));
+    }
+    return null;
+  }
+
+  if (seoResult.errors) {
+    throw new WordPressGraphQLError(seoResult.errors.join(", "));
+  }
+
+  return null;
 }
 
 function withFetchStatus(
@@ -97,14 +127,23 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   }
 
   try {
-    const data = await executeQuery<Parameters<typeof mapSiteSettings>[0]>(
-      SITE_SETTINGS_QUERY,
-      undefined,
-      { tags: [CACHE_TAGS.siteSettings] }
-    );
-    return mapSiteSettings(data, getBaseUrl());
+    const result = await executeQuerySafe<
+      Parameters<typeof mapSiteSettings>[0]
+    >(SITE_SETTINGS_QUERY, undefined, { tags: [CACHE_TAGS.siteSettings] });
+
+    if (result.schemaMissing || !result.data?.acfOptionsSiteSettings) {
+      devWarn(
+        "[wordpress] acfOptionsSiteSettings unavailable — using fallback",
+        result.errors
+      );
+      return fallbackSiteSettings;
+    }
+
+    return mapSiteSettings(result.data, getBaseUrl());
   } catch (error) {
-    console.error("[wordpress] getSiteSettings failed:", error);
+    if (!isSchemaMissingError(error)) {
+      devWarn("[wordpress] getSiteSettings failed:", error);
+    }
     return fallbackSiteSettings;
   }
 });
@@ -115,13 +154,21 @@ export const getFaqs = cache(async (): Promise<FaqItem[]> => {
   }
 
   try {
-    const data = await executeQuery<{
+    const result = await executeQuerySafe<{
       faqs?: { nodes?: { title?: string; content?: string }[] };
     }>(FAQS_QUERY, undefined, { tags: [CACHE_TAGS.faqs] });
-    const items = mapFaqItems(data.faqs?.nodes);
+
+    if (result.schemaMissing || !result.data?.faqs) {
+      devWarn("[wordpress] faqs query unavailable — using fallback", result.errors);
+      return fallbackFaqItems;
+    }
+
+    const items = mapFaqItems(result.data.faqs?.nodes);
     return items.length ? items : fallbackFaqItems;
   } catch (error) {
-    console.error("[wordpress] getFaqs failed:", error);
+    if (!isSchemaMissingError(error)) {
+      devWarn("[wordpress] getFaqs failed:", error);
+    }
     return fallbackFaqItems;
   }
 });
@@ -145,9 +192,7 @@ export async function getPosts(
   } = {}
 ): Promise<WpPostsResult> {
   if (!isWordPressConfigured()) {
-    console.warn(
-      "[wordpress] getPosts: WORDPRESS_GRAPHQL_URL is not configured"
-    );
+    devWarn("[wordpress] getPosts: WORDPRESS_GRAPHQL_URL is not configured");
     return withFetchStatus(
       emptyPostsResult,
       "not_configured",
@@ -160,7 +205,7 @@ export async function getPosts(
   const variables = { first, after, search: search || null };
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       posts: {
         pageInfo: WpPostsResult["pageInfo"];
         nodes: Parameters<typeof mapWpPost>[0][];
@@ -170,6 +215,10 @@ export async function getPosts(
       preview,
     });
 
+    if (!data) {
+      return withFetchStatus(emptyPostsResult, "empty");
+    }
+
     const result = mapPostsResult(data);
     return withFetchStatus(
       result,
@@ -177,14 +226,14 @@ export async function getPosts(
     );
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[wordpress] getPosts failed:", message);
+    devWarn("[wordpress] getPosts failed:", message);
     return withFetchStatus(emptyPostsResult, "graphql_error", message);
   }
 }
 
 export async function getPostBySlug(slug: string): Promise<WpPost | null> {
   if (!isWordPressConfigured()) {
-    console.warn(
+    devWarn(
       "[wordpress] getPostBySlug: WORDPRESS_GRAPHQL_URL is not configured"
     );
     return null;
@@ -193,7 +242,7 @@ export async function getPostBySlug(slug: string): Promise<WpPost | null> {
   const preview = await isPreviewMode();
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       post: Parameters<typeof mapWpPost>[0] | null;
     }>(
       POST_BY_SLUG_QUERY,
@@ -202,9 +251,9 @@ export async function getPostBySlug(slug: string): Promise<WpPost | null> {
       { tags: [CACHE_TAGS.posts, CACHE_TAGS.post(slug)], preview }
     );
 
-    return data.post ? mapWpPost(data.post) : null;
+    return data?.post ? mapWpPost(data.post) : null;
   } catch (error) {
-    console.error(`[wordpress] getPostBySlug(${slug}) failed:`, error);
+    devWarn(`[wordpress] getPostBySlug(${slug}) failed:`, error);
     return null;
   }
 }
@@ -227,20 +276,25 @@ export async function getAllPostSlugs(): Promise<
     };
 
     while (hasNextPage) {
-      const data: SlugBatch = await executeQuery<SlugBatch>(
+      const result: GraphQLResult<SlugBatch> = await executeQuerySafe<SlugBatch>(
         POST_SLUGS_QUERY,
         { first: 100, after },
         { tags: [CACHE_TAGS.posts] }
       );
 
-      slugs.push(...data.posts.nodes);
-      hasNextPage = data.posts.pageInfo.hasNextPage;
-      after = data.posts.pageInfo.endCursor;
+      if (result.schemaMissing || !result.data) {
+        devWarn("[wordpress] getAllPostSlugs schema unavailable", result.errors);
+        return [];
+      }
+
+      slugs.push(...result.data.posts.nodes);
+      hasNextPage = result.data.posts.pageInfo.hasNextPage;
+      after = result.data.posts.pageInfo.endCursor;
     }
 
     return slugs;
   } catch (error) {
-    console.error("[wordpress] getAllPostSlugs failed:", error);
+    devWarn("[wordpress] getAllPostSlugs failed:", error);
     return [];
   }
 }
@@ -256,7 +310,7 @@ export async function getPostsByCategory(
   const { first = 10, after = null } = options;
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       posts: {
         pageInfo: WpPostsResult["pageInfo"];
         nodes: Parameters<typeof mapWpPost>[0][];
@@ -269,12 +323,16 @@ export async function getPostsByCategory(
       { tags: [CACHE_TAGS.posts, CACHE_TAGS.categories] }
     );
 
+    if (!data) {
+      return { result: emptyPostsResult, category: null };
+    }
+
     return {
       result: mapPostsResult(data),
       category: mapCategory(data.category),
     };
   } catch (error) {
-    console.error(`[wordpress] getPostsByCategory(${slug}) failed:`, error);
+    devWarn(`[wordpress] getPostsByCategory(${slug}) failed:`, error);
     return { result: emptyPostsResult, category: null };
   }
 }
@@ -290,7 +348,7 @@ export async function getPostsByTag(
   const { first = 10, after = null } = options;
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       posts: {
         pageInfo: WpPostsResult["pageInfo"];
         nodes: Parameters<typeof mapWpPost>[0][];
@@ -303,12 +361,16 @@ export async function getPostsByTag(
       { tags: [CACHE_TAGS.posts, CACHE_TAGS.tags] }
     );
 
+    if (!data) {
+      return { result: emptyPostsResult, tag: null };
+    }
+
     return {
       result: mapPostsResult(data),
       tag: mapTag(data.tag),
     };
   } catch (error) {
-    console.error(`[wordpress] getPostsByTag(${slug}) failed:`, error);
+    devWarn(`[wordpress] getPostsByTag(${slug}) failed:`, error);
     return { result: emptyPostsResult, tag: null };
   }
 }
@@ -333,7 +395,7 @@ export async function getRelatedPosts(
   if (!categoryIds.length) return [];
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       posts: { nodes: Parameters<typeof mapWpPost>[0][] };
     }>(
       RELATED_POSTS_QUERY,
@@ -346,9 +408,11 @@ export async function getRelatedPosts(
       { tags: [CACHE_TAGS.posts] }
     );
 
+    if (!data) return [];
+
     return data.posts.nodes.map(mapWpPost);
   } catch (error) {
-    console.error("[wordpress] getRelatedPosts failed:", error);
+    devWarn("[wordpress] getRelatedPosts failed:", error);
     return [];
   }
 }
@@ -359,15 +423,19 @@ export async function getAdjacentPosts(post: WpPost): Promise<AdjacentPosts> {
   }
 
   try {
-    const data = await executeWithSeoFallback<{
+    const data = await executePostQuery<{
       previous: { nodes: Parameters<typeof mapWpPost>[0][] };
       next: { nodes: Parameters<typeof mapWpPost>[0][] };
     }>(
       ADJACENT_POSTS_QUERY,
       ADJACENT_POSTS_QUERY_BASE,
-      { date: post.date },
+      { date: isoToDateInput(post.date) },
       { tags: [CACHE_TAGS.posts] }
     );
+
+    if (!data) {
+      return { previous: null, next: null };
+    }
 
     return {
       previous: data.previous.nodes[0]
@@ -376,7 +444,7 @@ export async function getAdjacentPosts(post: WpPost): Promise<AdjacentPosts> {
       next: data.next.nodes[0] ? mapWpPost(data.next.nodes[0]) : null,
     };
   } catch (error) {
-    console.error("[wordpress] getAdjacentPosts failed:", error);
+    devWarn("[wordpress] getAdjacentPosts failed:", error);
     return { previous: null, next: null };
   }
 }
@@ -385,15 +453,20 @@ export async function getCategories(): Promise<WpCategory[]> {
   if (!isWordPressConfigured()) return [];
 
   try {
-    const data = await executeQuery<{
+    const result = await executeQuerySafe<{
       categories: { nodes: Parameters<typeof mapCategory>[0][] };
     }>(CATEGORIES_QUERY, undefined, { tags: [CACHE_TAGS.categories] });
 
-    return data.categories.nodes
+    if (result.schemaMissing || !result.data) {
+      devWarn("[wordpress] getCategories schema unavailable", result.errors);
+      return [];
+    }
+
+    return result.data.categories.nodes
       .map(mapCategory)
       .filter((c): c is WpCategory => c !== null);
   } catch (error) {
-    console.error("[wordpress] getCategories failed:", error);
+    devWarn("[wordpress] getCategories failed:", error);
     return [];
   }
 }
@@ -402,13 +475,18 @@ export async function getTags(): Promise<WpTag[]> {
   if (!isWordPressConfigured()) return [];
 
   try {
-    const data = await executeQuery<{
+    const result = await executeQuerySafe<{
       tags: { nodes: Parameters<typeof mapTag>[0][] };
     }>(TAGS_QUERY, undefined, { tags: [CACHE_TAGS.tags] });
 
-    return data.tags.nodes.map(mapTag).filter((t): t is WpTag => t !== null);
+    if (result.schemaMissing || !result.data) {
+      devWarn("[wordpress] getTags schema unavailable", result.errors);
+      return [];
+    }
+
+    return result.data.tags.nodes.map(mapTag).filter((t): t is WpTag => t !== null);
   } catch (error) {
-    console.error("[wordpress] getTags failed:", error);
+    devWarn("[wordpress] getTags failed:", error);
     return [];
   }
 }
@@ -439,22 +517,28 @@ export async function getSitemapData(): Promise<{
     };
 
     while (hasNextPage) {
-      const data: SitemapBatch = await executeQuery<SitemapBatch>(
+      const result: GraphQLResult<SitemapBatch> =
+        await executeQuerySafe<SitemapBatch>(
         SITEMAP_POSTS_QUERY,
         { first: 100, after },
         { tags: [CACHE_TAGS.posts] }
       );
 
-      posts.push(...data.posts.nodes);
-      categories = data.categories.nodes;
-      tags = data.tags.nodes;
-      hasNextPage = data.posts.pageInfo.hasNextPage;
-      after = data.posts.pageInfo.endCursor;
+      if (result.schemaMissing || !result.data) {
+        devWarn("[wordpress] getSitemapData schema unavailable", result.errors);
+        return { posts: [], categories: [], tags: [] };
+      }
+
+      posts.push(...result.data.posts.nodes);
+      categories = result.data.categories.nodes;
+      tags = result.data.tags.nodes;
+      hasNextPage = result.data.posts.pageInfo.hasNextPage;
+      after = result.data.posts.pageInfo.endCursor;
     }
 
     return { posts, categories, tags };
   } catch (error) {
-    console.error("[wordpress] getSitemapData failed:", error);
+    devWarn("[wordpress] getSitemapData failed:", error);
     return { posts: [], categories: [], tags: [] };
   }
 }
@@ -472,7 +556,7 @@ export async function getRssPosts(): Promise<
   if (!isWordPressConfigured()) return [];
 
   try {
-    const data = await executeQuery<{
+    const result = await executeQuerySafe<{
       posts: {
         nodes: {
           title: string;
@@ -485,7 +569,12 @@ export async function getRssPosts(): Promise<
       };
     }>(RSS_POSTS_QUERY, { first: 20 }, { tags: [CACHE_TAGS.posts] });
 
-    return data.posts.nodes.map((node) => ({
+    if (result.schemaMissing || !result.data) {
+      devWarn("[wordpress] getRssPosts schema unavailable", result.errors);
+      return [];
+    }
+
+    return result.data.posts.nodes.map((node) => ({
       title: node.title,
       slug: node.slug,
       excerpt: node.excerpt.replace(/<[^>]*>/g, "").trim(),
@@ -494,7 +583,7 @@ export async function getRssPosts(): Promise<
       author: node.author?.node?.name ?? "Admin",
     }));
   } catch (error) {
-    console.error("[wordpress] getRssPosts failed:", error);
+    devWarn("[wordpress] getRssPosts failed:", error);
     return [];
   }
 }

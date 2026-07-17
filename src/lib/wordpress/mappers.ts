@@ -1,4 +1,3 @@
-import { APK_FILENAME } from "@/lib/download-config";
 import type {
   AboutCopy,
   ConclusionCopy,
@@ -232,6 +231,14 @@ function mapNavLinks(
   return mapped.length ? mapped : fallback;
 }
 
+function resolveDownloadUrl(
+  cmsUrl: string | null | undefined,
+  fallbackUrl: string
+): string {
+  if (cmsUrl?.startsWith("http")) return cmsUrl;
+  return fallbackUrl;
+}
+
 export function mapSiteSettings(
   data: WpSiteSettingsResponse,
   baseUrl: string
@@ -250,9 +257,11 @@ export function mapSiteSettings(
     description: meta?.description ?? fb.siteConfig.description,
     locale: meta?.locale ?? fb.siteConfig.locale,
     mainKeyword: meta?.mainKeyword ?? fb.siteConfig.mainKeyword,
-    downloadFile: meta?.downloadFileUrl ?? fb.siteConfig.downloadFile,
+    downloadFile: resolveDownloadUrl(
+      meta?.downloadFileUrl,
+      fb.siteConfig.downloadFile
+    ),
     downloadFileName: meta?.downloadFileName ?? fb.siteConfig.downloadFileName,
-    downloadSaveName: fb.siteConfig.downloadSaveName ?? APK_FILENAME,
     downloadFileSizeLabel: fb.siteConfig.downloadFileSizeLabel,
   };
 

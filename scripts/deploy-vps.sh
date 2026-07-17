@@ -4,7 +4,6 @@
 set -euo pipefail
 
 PROJECT_DIR="/home/sakuraschoolsimulator/htdocs/sakuraschoolsimulator.net"
-APK_FILE="public/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk"
 
 cd "$PROJECT_DIR"
 
@@ -18,16 +17,6 @@ mkdir -p logs
 echo "==> Pull latest code"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo master)"
 git pull origin "$GIT_BRANCH"
-
-echo "==> Verify APK file exists"
-if [ -f "$APK_FILE" ]; then
-  APK_SIZE="$(du -h "$APK_FILE" | cut -f1)"
-  echo "    Found $APK_FILE ($APK_SIZE)"
-else
-  echo "ERROR: APK not found at $APK_FILE"
-  echo "       Upload the real APK to public/downloads/ before deploying."
-  exit 1
-fi
 
 echo "==> Install dependencies"
 npm ci
@@ -90,8 +79,7 @@ pm2 save
 echo "==> Local health check"
 curl -sI http://127.0.0.1:3000 | head -5
 curl -s http://127.0.0.1:3000/sitemap.xml | head -3
-curl -sI "http://127.0.0.1:3000/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk" | head -3
 
 echo "==> Done. Verify live:"
 echo "    https://sakuraschoolsimulator.net/blog"
-echo "    https://sakuraschoolsimulator.net/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk"
+echo "    https://sakuraschoolsimulator.net/ (download buttons → APKPure)"

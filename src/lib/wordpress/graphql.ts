@@ -32,11 +32,29 @@ export interface ExecuteQueryOptions {
   preview?: boolean;
 }
 
-export async function executeQuery<T>(
+export interface GraphQLResult<T> {
+  data: T | null;
+  schemaMissing: boolean;
+  errors?: string[];
+}
+
+export function isMissingFieldError(message: string): boolean {
+  return /cannot query field/i.test(message);
+}
+
+function classifyGraphQLErrors(
+  errors: { message: string }[]
+): { schemaMissing: boolean; messages: string[] } {
+  const messages = errors.map((e) => e.message);
+  const schemaMissing = messages.every(isMissingFieldError);
+  return { schemaMissing, messages };
+}
+
+export async function executeQuerySafe<T>(
   query: string,
   variables?: Record<string, unknown>,
   options: ExecuteQueryOptions = {}
-): Promise<T> {
+): Promise<GraphQLResult<T>> {
   const endpoint = env.WORDPRESS_GRAPHQL_URL;
   if (!endpoint) {
     throw new WordPressGraphQLError("WORDPRESS_GRAPHQL_URL is not configured");
@@ -72,15 +90,42 @@ export async function executeQuery<T>(
   const json = (await response.json()) as GraphQLResponse<T>;
 
   if (json.errors?.length) {
-    throw new WordPressGraphQLError(
-      json.errors.map((e) => e.message).join(", "),
-      json.errors
-    );
+    const { schemaMissing, messages } = classifyGraphQLErrors(json.errors);
+
+    if (schemaMissing) {
+      return {
+        data: null,
+        schemaMissing: true,
+        errors: messages,
+      };
+    }
+
+    throw new WordPressGraphQLError(messages.join(", "), json.errors);
   }
 
   if (!json.data) {
     throw new WordPressGraphQLError("GraphQL response contained no data");
   }
 
-  return json.data;
+  return {
+    data: json.data,
+    schemaMissing: false,
+  };
+}
+
+export async function executeQuery<T>(
+  query: string,
+  variables?: Record<string, unknown>,
+  options: ExecuteQueryOptions = {}
+): Promise<T> {
+  const result = await executeQuerySafe<T>(query, variables, options);
+
+  if (result.schemaMissing || result.data === null) {
+    throw new WordPressGraphQLError(
+      result.errors?.join(", ") ?? "GraphQL response contained no data",
+      result.errors
+    );
+  }
+
+  return result.data;
 }

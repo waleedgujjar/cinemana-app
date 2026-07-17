@@ -1,4 +1,4 @@
-import { APK_DOWNLOAD_PATH, APK_FILENAME } from "@/lib/download-config";
+import { APK_DOWNLOAD_URL } from "@/lib/download-config";
 
 export const siteConfig = {
   name: "Sakura School Simulator",
@@ -9,9 +9,8 @@ export const siteConfig = {
     "Unduh Sakura School Simulator APK gratis untuk Android. Jelajahi dunia sekolah terbuka, kustomisasi karakter, dan petualangan seru — aman, cepat, dan tanpa registrasi.",
   locale: "id_ID",
   mainKeyword: "sakura school simulator APK",
-  downloadFile: APK_DOWNLOAD_PATH,
+  downloadFile: APK_DOWNLOAD_URL,
   downloadFileName: "Sakura School Simulator APK",
-  downloadSaveName: APK_FILENAME,
   downloadFileSizeBytes: 265978841,
   downloadFileSizeLabel: "254 MB",
 } as const;
@@ -54,7 +53,7 @@ export const downloadGuideCopy = {
       icon: "Download" as const,
       title: "Unduh File APK",
       description:
-        'Klik tombol "Unduh APK Sekarang" untuk mengunduh Sakura School Simulator APK versi terbaru secara langsung dari server kami — tanpa perantara pihak ketiga.',
+        'Klik tombol "Unduh APK Sekarang" untuk membuka halaman unduh APKPure resmi dan mengunduh Sakura School Simulator APK versi terbaru.',
     },
     {
       number: "03",
@@ -212,13 +211,13 @@ export const whyDownloadCopy = {
       icon: "Shield" as const,
       title: "File APK Aman & Terpercaya",
       description:
-        "Setiap Sakura School Simulator APK diunduh langsung dari server kami. Tanpa modifikasi berbahaya, tanpa malware, dan tanpa bundling iklan yang tidak perlu.",
+        "Tombol unduh mengarahkan ke APKPure, sumber unduhan Android yang dikenal luas. Tanpa modifikasi berbahaya dari situs ini.",
     },
     {
       icon: "Download" as const,
       title: "Unduhan Cepat & Langsung",
       description:
-        "Satu klik untuk mengunduh Sakura School Simulator APK versi terbaru. Tanpa shortlink, tanpa halaman iklan berlapis, tanpa registrasi wajib.",
+        "Satu klik membuka halaman unduh APKPure untuk Sakura School Simulator APK versi terbaru. Tanpa registrasi wajib di situs kami.",
     },
     {
       icon: "Star" as const,
@@ -363,7 +362,7 @@ export const faqCopy = {
     {
       question: "Apakah Sakura School Simulator APK aman diunduh dari sini?",
       answer:
-        "Ya. File APK diunduh langsung dari server resmi kami dan diperbarui secara berkala. Hindari mengunduh dari sumber tidak dikenal untuk mencegah file palsu atau berbahaya.",
+        "Ya. Tombol unduh di situs ini mengarahkan ke APKPure, platform unduhan Android terpercaya. Hindari mengunduh dari sumber tidak dikenal untuk mencegah file palsu atau berbahaya.",
     },
     {
       question: "Apakah perlu akun untuk bermain?",

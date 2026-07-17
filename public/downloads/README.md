@@ -1,21 +1,14 @@
-# APK downloads
+# Downloads
 
-Public download URL:
+APK files are **not** hosted on this server.
 
-- **URL:** `/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk`
-- **Constant:** `APK_DOWNLOAD_PATH` in `src/lib/download-config.ts`
-- **Version / size:** `src/lib/site-config.ts`
+All download buttons redirect to APKPure:
 
-## VPS deployment
+- **URL:** `https://d.apkpure.com/b/XAPK/jp.garud.ssimulator?version=latest`
+- **Constant:** `APK_DOWNLOAD_URL` in `src/lib/download-config.ts`
 
-The real APK (~254 MB) cannot be stored in GitHub. Upload it to the VPS at the exact path above before running `bash scripts/deploy-vps.sh`.
-
-```bash
-# From local machine
-scp public/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk \
-  user@vps:/home/sakuraschoolsimulator/htdocs/sakuraschoolsimulator.net/public/downloads/
-```
+No APK upload is required on the VPS for downloads to work.
 
 ## WordPress ACF (optional override)
 
-Set `downloadFileUrl` to `/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk` in CMS site settings.
+Set `downloadFileUrl` to a full `https://` URL in CMS site settings. Local `/downloads/` paths are ignored and fall back to APKPure.

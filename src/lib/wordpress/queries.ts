@@ -465,7 +465,7 @@ export const RELATED_POSTS_QUERY_BASE = `
 `;
 
 export const ADJACENT_POSTS_QUERY = `
-  query AdjacentPosts($date: String!) {
+  query AdjacentPosts($date: DateInput!) {
     previous: posts(
       first: 1
       where: { status: PUBLISH, dateQuery: { before: $date }, orderby: { field: DATE, order: DESC } }
@@ -487,7 +487,7 @@ export const ADJACENT_POSTS_QUERY = `
 `;
 
 export const ADJACENT_POSTS_QUERY_BASE = `
-  query AdjacentPostsBase($date: String!) {
+  query AdjacentPostsBase($date: DateInput!) {
     previous: posts(
       first: 1
       where: { status: PUBLISH, dateQuery: { before: $date }, orderby: { field: DATE, order: DESC } }

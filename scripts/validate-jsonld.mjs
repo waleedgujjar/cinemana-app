@@ -3,8 +3,8 @@
  * Validate JSON-LD on the live homepage (SoftwareApplication.downloadUrl).
  * Usage: node scripts/validate-jsonld.mjs [siteUrl]
  */
-const APK_PATH =
-  "/downloads/SAKURA_School_Simulator_1.048.03_3f0a690d_techylist.com.apk";
+const APK_DOWNLOAD_URL =
+  "https://d.apkpure.com/b/XAPK/jp.garud.ssimulator?version=latest";
 
 const siteUrl = (
   process.argv[2] ??
@@ -12,7 +12,7 @@ const siteUrl = (
   "https://sakuraschoolsimulator.net"
 ).replace(/\/$/, "");
 
-const expectedDownload = `${siteUrl}${APK_PATH}`;
+const expectedDownload = APK_DOWNLOAD_URL;
 
 function extractJsonLd(html) {
   const blocks = [];

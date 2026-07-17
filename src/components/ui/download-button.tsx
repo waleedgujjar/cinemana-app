@@ -8,7 +8,6 @@ import type { VariantProps } from "class-variance-authority";
 
 interface DownloadButtonProps {
   fileUrl?: string;
-  downloadName?: string;
   version?: string;
   fileSizeLabel?: string;
   size?: VariantProps<typeof buttonVariants>["size"];
@@ -18,7 +17,6 @@ interface DownloadButtonProps {
 
 export function DownloadButton({
   fileUrl = siteConfig.downloadFile,
-  downloadName = siteConfig.downloadSaveName,
   version = siteConfig.version,
   fileSizeLabel = siteConfig.downloadFileSizeLabel,
   size = "default",
@@ -30,9 +28,9 @@ export function DownloadButton({
   return (
     <a
       href={fileUrl}
-      download={downloadName}
-      aria-label={`Unduh ${siteConfig.downloadFileName}, versi ${version}${sizeHint}`}
-      type="application/vnd.android.package-archive"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Unduh ${siteConfig.downloadFileName} di APKPure, versi ${version}${sizeHint}`}
       className={cn(buttonVariants({ variant: "default", size }), className)}
     >
       <Download aria-hidden="true" />

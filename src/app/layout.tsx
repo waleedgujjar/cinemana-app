@@ -81,6 +81,9 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
       },
     },
+    verification: {
+      google: "J-rRDIa0Cn9ZP0yl8a1lcHyP9xo8IbrNElCa8ncvFRY",
+    },
   };
 }
 
